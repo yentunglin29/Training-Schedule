@@ -1,32 +1,12 @@
 {
-  "name": "course-info-app",
+  "name": "training-schedule",
   "version": "1.0.0",
-  "main": "main.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {
-    "electron": "^26.1.0",
-    "electron-builder": "^24.5.0"
-  },
-  "build": {
-    "appId": "com.example.courseinfo",
-    "productName": "CourseInfoApp",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "**/*"
-    ],
-    "win": {
-      "target": "nsis"
-    },
-    "mac": {
-      "target": "dmg"
-    },
-    "linux": {
-      "target": "AppImage"
-    }
-  }
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
