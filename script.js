@@ -1,3 +1,31 @@
+document.addEventListener('DOMContentLoaded', function() {
+  // Load course titles
+  fetch('/titles')
+    .then(response => response.json())
+    .then(titles => {
+      const titleSelect = document.getElementById('title');
+      titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title;
+        option.text = title;
+        titleSelect.add(option);
+      });
+    });
+
+  // Load presenters
+  fetch('/presenters')
+    .then(response => response.json())
+    .then(presenters => {
+      const presenterSelect = document.getElementById('presenter');
+      presenters.forEach(presenter => {
+        const option = document.createElement('option');
+        option.value = presenter;
+        option.text = presenter;
+        presenterSelect.add(option);
+      });
+    });
+});
+
 document.getElementById('courseForm').addEventListener('submit', function(event) {
   event.preventDefault();
 
@@ -7,7 +35,7 @@ document.getElementById('courseForm').addEventListener('submit', function(event)
     topic: formData.get('topic'),
     content: formData.get('content'),
     duration: parseInt(formData.get('duration')),
-    presenter: formData.get('presenter')
+    presenter: Array.from(formData.getAll('presenter'))
   };
 
   fetch('/save', {
@@ -17,12 +45,10 @@ document.getElementById('courseForm').addEventListener('submit', function(event)
     },
     body: JSON.stringify(course),
   })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.text();
+  .then(response => response.text())
+  .then(data => {
+    console.log('Saved:', data);
+    alert('Course saved');
   })
-  .then(data => console.log('Saved:', data))
   .catch(error => console.error('Error:', error));
 });
