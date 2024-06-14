@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Load course titles
+  // 加载课程标题
   fetch('/titles')
     .then(response => response.json())
     .then(titles => {
@@ -10,9 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
         option.text = title;
         titleSelect.add(option);
       });
-    });
+    })
+    .catch(error => console.error('Error fetching titles:', error));
 
-  // Load presenters
+  // 加载演讲者
   fetch('/presenters')
     .then(response => response.json())
     .then(presenters => {
@@ -23,7 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
         option.text = presenter;
         presenterSelect.add(option);
       });
-    });
+    })
+    .catch(error => console.error('Error fetching presenters:', error));
 });
 
 document.getElementById('courseForm').addEventListener('submit', function(event) {
@@ -45,10 +47,16 @@ document.getElementById('courseForm').addEventListener('submit', function(event)
     },
     body: JSON.stringify(course),
   })
-  .then(response => response.text())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.text();
+  })
   .then(data => {
     console.log('Saved:', data);
     alert('Course saved');
+    window.location.href = '/pages/index.html'; // 保存成功后重定向到主页
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.error('Error saving course:', error));
 });

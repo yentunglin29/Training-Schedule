@@ -3,12 +3,15 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3001; // Use a different port if 3000 is still in use
+const PORT = 3001; // 使用未占用的端口
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 
-// Helper functions
+// Serve static files from the root and pages directories
+app.use('/pages', express.static(path.join(__dirname, 'pages')));
+app.use(express.static(__dirname)); // Serve script.js
+
+// 辅助函数
 const readJSONFile = (relativePath) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path.join(__dirname, relativePath), 'utf-8', (err, data) => {
@@ -27,7 +30,7 @@ const writeJSONFile = (relativePath, data) => {
   });
 };
 
-// Serve existing course titles
+// 提供现有课程标题
 app.get('/titles', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -37,7 +40,7 @@ app.get('/titles', async (req, res) => {
   }
 });
 
-// Serve existing presenters
+// 提供现有演讲者
 app.get('/presenters', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -47,7 +50,7 @@ app.get('/presenters', async (req, res) => {
   }
 });
 
-// Endpoint to add a new course title
+// 添加新课程标题
 app.post('/add-course', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -59,7 +62,7 @@ app.post('/add-course', async (req, res) => {
   }
 });
 
-// Endpoint to add a new presenter
+// 添加新演讲者
 app.post('/add-presenter', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -71,7 +74,7 @@ app.post('/add-presenter', async (req, res) => {
   }
 });
 
-// Endpoint to save course data
+// 保存课程数据
 app.post('/save', async (req, res) => {
   try {
     const courses = await readJSONFile('database/courses.json');
@@ -83,7 +86,7 @@ app.post('/save', async (req, res) => {
   }
 });
 
-// Start the server
+// 启动服务器
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
