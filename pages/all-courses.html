@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display All Courses</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- menu bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/pages/index.html">Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/add-course.html">Add Course</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-courses.html">Display All Courses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-titles.html">Display All Titles</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-presenters.html">Display All Presenters</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1>All Courses</h1>
+      <a href="/pages/add-course.html" class="btn btn-primary">Add New Course</a>
+    </div>
+    <ul id="courseList" class="list-group"></ul>
+  </div>
+
+  <script>
+    // Fetch courses from JSON
+    fetch('../database/courses.json')
+      .then(response => response.json())
+      .then(data => {
+        const courseList = document.getElementById('courseList');
+        data.forEach((course, index) => {
+          const listItem = document.createElement('li');
+          listItem.className = 'list-group-item';
+          listItem.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>Title:</strong> ${course.title}<br>
+                <strong>Topic:</strong> ${course.topic}<br>
+                <strong>Content:</strong> ${course.content}<br>
+                <strong>Duration:</strong> ${course.duration} mins<br>
+                <strong>Presenter:</strong> ${course.presenter.join(', ')}
+              </div>
+              <div>
+                <button class="btn btn-sm btn-warning" onclick="editCourse(${index})">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
+              </div>
+            </div>
+          `;
+          courseList.appendChild(listItem);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+
+    // Function to redirect to edit page
+    function editCourse(index) {
+      const url = new URL('/pages/edit-course.html', window.location.origin);
+      url.searchParams.append('index', index);
+      window.location.href = url;
+    }
+
+    // Delete course function
+    function deleteCourse(index) {
+      fetch('../database/courses.json')
+        .then(response => response.json())
+        .then(data => {
+          data.splice(index, 1); // Remove the course from the array
+          return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // Reload the page or update the UI to reflect changes
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Course</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- menu bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/pages/index.html">Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/add-course.html">Add Course</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-courses.html">Display All Courses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-titles.html">Display All Titles</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/pages/all-presenters.html">Display All Presenters</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <h1>Edit Course</h1>
+    <form id="editCourseForm">
+      <div class="form-group">
+        <label for="courseTitle">Course Title:</label>
+        <input type="text" class="form-control" id="courseTitle" name="courseTitle" required>
+      </div>
+      <div class="form-group">
+        <label for="courseTopic">Course Topic:</label>
+        <input type="text" class="form-control" id="courseTopic" name="courseTopic" required>
+      </div>
+      <div class="form-group">
+        <label for="courseContent">Course Content:</label>
+        <textarea class="form-control" id="courseContent" name="courseContent" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="courseDuration">Course Duration (min):</label>
+        <input type="number" class="form-control" id="courseDuration" name="courseDuration" required>
+      </div>
+      <div class="form-group">
+        <label for="coursePresenter">Course Presenter:</label>
+        <input type="text" class="form-control" id="coursePresenter" name="coursePresenter" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const index = urlParams.get('index');
+
+      fetch('../database/courses.json')
+        .then(response => response.json())
+        .then(data => {
+          const course = data[index];
+          document.getElementById('courseTitle').value = course.title;
+          document.getElementById('courseTopic').value = course.topic;
+          document.getElementById('courseContent').value = course.content;
+          document.getElementById('courseDuration').value = course.duration;
+          document.getElementById('coursePresenter').value = course.presenter.join(', ');
+        })
+        .catch(error => console.error('Error:', error));
+
+      document.getElementById('editCourseForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const updatedCourse = {
+          title: document.getElementById('courseTitle').value,
+          topic: document.getElementById('courseTopic').value,
+          content: document.getElementById('courseContent').value,
+          duration: parseInt(document.getElementById('courseDuration').value),
+          presenter: document.getElementById('coursePresenter').value.split(',').map(p => p.trim())
+        };
+
+        fetch('../database/courses.json')
+          .then(response => response.json())
+          .then(data => {
+            data[index] = updatedCourse; // Update the course data
+            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            });
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            // Redirect back to the courses list
+            window.location.href = '/pages/all-courses.html';
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+  </script>
+</body>
+</html>

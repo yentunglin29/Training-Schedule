@@ -85,6 +85,16 @@ app.post('/save', async (req, res) => {
   }
 });
 
+// update courses
+app.post('/update-courses', async (req, res) => {
+  try {
+    await writeJSONFile('database/courses.json', req.body);
+    res.send('Courses updated successfully');
+  } catch (err) {
+    res.status(500).send('Failed to update courses');
+  }
+});
+
 // update titles
 app.post('/update-titles', async (req, res) => {
   try {
