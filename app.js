@@ -95,6 +95,16 @@ app.post('/update-titles', async (req, res) => {
   }
 });
 
+// update presenters
+app.post('/update-presenters', async (req, res) => {
+  try {
+    await writeJSONFile('database/presenters.json', req.body);
+    res.send('Presenters updated successfully');
+  } catch (err) {
+    res.status(500).send('Failed to update presenters');
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}/pages/index.html`);
 });

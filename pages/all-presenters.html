@@ -44,20 +44,43 @@
       .then(response => response.json())
       .then(data => {
         const presenterList = document.getElementById('presenterList');
-        data.forEach(presenter => {
+        data.forEach((presenter, index) => {
           const listItem = document.createElement('li');
           listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
           listItem.innerHTML = `
             ${presenter}
             <div>
               <button class="btn btn-sm btn-warning">Edit</button>
-              <button class="btn btn-sm btn-danger">Delete</button>
+              <button class="btn btn-sm btn-danger" onclick="deletePresenter(${index})">Delete</button>
             </div>
           `;
           presenterList.appendChild(listItem);
         });
       })
       .catch(error => console.error('Error:', error));
+      
+      function deletePresenter(index) {
+      fetch('../database/presenters.json')
+        .then(response => response.json())
+        .then(data => {
+          data.splice(index, 1); // Remove the title from the array
+          return fetch('http://localhost:3000/update-presenters', { // Endpoint to update presenters.json
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // Reload the page or update the UI to reflect changes
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+    }  
   </script>
 </body>
 </html>
