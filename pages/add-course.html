@@ -32,10 +32,8 @@
         <small class="form-text text-muted">Please enter a duration between 5 and 480 minutes.</small>
       </div>
       <div class="form-group">
-        <label for="presenter">Presenter:</label>
-        <select class="form-control" id="presenter" name="presenter" multiple required>
-          <option value="">Select Presenter</option>
-        </select>
+        <label>Presenters:</label>
+        <div id="presenterList"></div>
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
@@ -53,6 +51,35 @@
         document.getElementById('menu-bar').innerHTML = data;
       })
       .catch(error => console.error('Error loading menu:', error));
+
+    // Fetch presenters and populate checkboxes
+    fetch('../database/presenters.json')
+      .then(response => response.json())
+      .then(presenters => {
+        const presenterList = document.getElementById('presenterList');
+        presenterList.innerHTML = ''; // Clear any existing content
+        presenters.forEach(presenter => {
+          const checkboxWrapper = document.createElement('div');
+          checkboxWrapper.className = 'form-check';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'form-check-input';
+          checkbox.id = `presenter-${presenter}`;
+          checkbox.value = presenter;
+          checkbox.name = 'presenter';
+
+          const label = document.createElement('label');
+          label.className = 'form-check-label';
+          label.htmlFor = `presenter-${presenter}`;
+          label.textContent = presenter;
+
+          checkboxWrapper.appendChild(checkbox);
+          checkboxWrapper.appendChild(label);
+          presenterList.appendChild(checkboxWrapper);
+        });
+      })
+      .catch(error => console.error('Error loading presenters:', error));
   </script>
 </body>
 </html>

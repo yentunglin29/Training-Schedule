@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "title": "BC",
+    "topic": "Opening",
+    "content": "Welcome",
+    "duration": 30,
+    "presenter": [
+      "Sandy",
+      "Nash"
+    ]
+  }
+]
