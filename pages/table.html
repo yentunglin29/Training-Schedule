@@ -9,6 +9,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-bottom: 20px;
     }
     th, td {
       border: 1px solid #dddddd;
@@ -18,94 +19,117 @@
     th {
       background-color: #f2f2f2;
     }
+    #add-table-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    }
+    #tables-container {
+      margin-bottom: 80px; /* Add space for the floating button */
+    }
   </style>
 </head>
 <body>
   <div class="container mt-4">
     <h1>訂餐與住宿統計表</h1>
-    <table>
-      <thead>
-        <tr>
-          <th> </th>
-          <th><input type="text" class="form-control" value="4/1" onchange="updateDate(this, 0)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/2" onchange="updateDate(this, 1)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/3" onchange="updateDate(this, 2)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/8" onchange="updateDate(this, 3)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/9" onchange="updateDate(this, 4)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/10" onchange="updateDate(this, 5)" style="width: 80px;"></th>
-          <th><input type="text" class="form-control" value="4/11" onchange="updateDate(this, 6)" style="width: 80px;"></th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-        <!-- Rows will be populated by JavaScript -->
-      </tbody>
-    </table>
+    <div id="tables-container">
+      <!-- Tables will be populated by JavaScript -->
+    </div>
+    <button id="add-table-btn" onclick="addTable()">+</button>
   </div>
 
   <script>
+    // Default rows data
+    const defaultRowsData = [
+      { title: '受訓-新進人員', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '受訓-新進人員(線上)', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '受訓-業務人員(旁聽)', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '住宿 -', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '行銷+行政(含珊珊)', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '受邀講師', values: [0, 0, 0, 0, 0, 0, 0] },
+      { title: '不在人員(請填上姓名及特殊備註)', values: [0, 0, 0, 0, 0, 0, 0] }
+    ];
+
     document.addEventListener('DOMContentLoaded', function() {
-      // Define the rows data
-      const rowsData = [
-        { title: '受訓-新進人員', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '受訓-新進人員(線上)', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '受訓-業務人員(旁聽)', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '住宿 -', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '行銷+行政(含珊珊)', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '受邀講師', values: [0, 0, 0, 0, 0, 0, 0] },
-        { title: '不在人員(請填上姓名及特殊備註)', values: [0, 0, 0, 0, 0, 0, 0] }
-      ];
-
-      // Generate <select> element with numeric options
-      function generateSelect(selected = 0) {
-        let select = '<select class="form-control" onchange="calculateTotal(this)">';
-        for (let i = 0; i <= 10; i++) {
-          select += `<option value="${i}" ${i === selected ? 'selected' : ''}>${i}</option>`;
-        }
-        select += '</select>';
-        return select;
-      }
-
-      // Generate <select> element with city options
-      function generateCitySelect() {
-        const cities = ['台北', '台中', '高雄'];
-        let select = '<select class="form-control">';
-        cities.forEach(city => {
-          select += `<option value="${city}">${city}</option>`;
-        });
-        select += '</select>';
-        return select;
-      }
-
-      // Populate the table with rows data
-      const tbody = document.getElementById('table-body');
-      rowsData.forEach(rowData => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${rowData.title}</td>
-          ${rowData.values.map(value => `<td>${generateSelect(value)}</td>`).join('')}
-        `;
-        tbody.appendChild(row);
-      });
-
-      // Add the total row
-      const totalRow = document.createElement('tr');
-      totalRow.innerHTML = `
-        <td><strong>total 人數</strong></td>
-        ${Array(7).fill('<td><strong>0</strong></td>').join('')}
-      `;
-      tbody.appendChild(totalRow);
-
-      // Add the city selection row
-      const cityRow = document.createElement('tr');
-      cityRow.innerHTML = `
-        <td><strong>Location</strong></td>
-        ${Array(7).fill(`<td>${generateCitySelect()}</td>`).join('')}
-      `;
-      tbody.appendChild(cityRow);
-
-      // Initial calculation of totals
-      document.querySelectorAll('select').forEach(select => calculateTotal(select));
+      // Initial table
+      addTable();
     });
+
+    // Add a new table
+    function addTable() {
+      const tableHTML = createTableHTML(defaultRowsData);
+      const tablesContainer = document.getElementById('tables-container');
+      const tableElement = document.createElement('div');
+      tableElement.innerHTML = tableHTML;
+      tablesContainer.appendChild(tableElement);
+
+      // Recalculate totals for the new table
+      tableElement.querySelectorAll('select').forEach(select => calculateTotal(select));
+    }
+
+    // Create table HTML string
+    function createTableHTML(rowsData) {
+      const tableId = 'table-' + document.querySelectorAll('table').length; // Unique table id
+      return `
+        <table id="${tableId}">
+          <thead>
+            <tr>
+              <th> </th>
+              ${Array.from({ length: 7 }, (_, i) => `<th><input type="text" class="form-control" value="4/${i + 1}" onchange="updateDate(this, ${i}, '${tableId}')" style="width: 80px;"></th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsData.map(rowData => `
+              <tr>
+                <td>${rowData.title}</td>
+                ${rowData.values.map(value => `<td>${generateSelect(value)}</td>`).join('')}
+              </tr>
+            `).join('')}
+            <tr>
+              <td><strong>total 人數</strong></td>
+              ${Array(7).fill('<td><strong>0</strong></td>').join('')}
+            </tr>
+            <tr>
+              <td><strong>Location</strong></td>
+              ${Array(7).fill(`<td>${generateCitySelect()}</td>`).join('')}
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    // Generate <select> element with numeric options
+    function generateSelect(selected = 0) {
+      let select = '<select class="form-control" onchange="calculateTotal(this)">';
+      for (let i = 0; i <= 10; i++) {
+        select += `<option value="${i}" ${i === selected ? 'selected' : ''}>${i}</option>`;
+      }
+      select += '</select>';
+      return select;
+    }
+
+    // Generate <select> element with city options
+    function generateCitySelect() {
+      const cities = ['台北', '台中', '高雄'];
+      let select = '<select class="form-control">';
+      cities.forEach(city => {
+        select += `<option value="${city}">${city}</option>`;
+      });
+      select += '</select>';
+      return select;
+    }
 
     // Calculate total for each column
     function calculateTotal(selectElement) {
@@ -124,8 +148,8 @@
     }
 
     // Update column header date
-    function updateDate(inputElement, colIndex) {
-      const table = inputElement.closest('table');
+    function updateDate(inputElement, colIndex, tableId) {
+      const table = document.getElementById(tableId);
       table.querySelectorAll('thead th')[colIndex + 1].innerText = inputElement.value;
     }
   </script>
