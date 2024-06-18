@@ -51,7 +51,7 @@
           listItem.innerHTML = `
             ${title}
             <div>
-              <button class="btn btn-sm btn-warning">Edit</button>
+              <button class="btn btn-sm btn-warning" onclick="editTitle(${index}, '${title}')">Edit</button>              
               <button class="btn btn-sm btn-danger" onclick="deleteTitle(${index})">Delete</button>
             </div>
           `;
@@ -59,6 +59,14 @@
         });
       })
       .catch(error => console.error('Error:', error));
+
+    // Function to redirect to edit page
+    function editTitle(index, name) {
+      const url = new URL('/pages/edit-title.html', window.location.origin);
+      url.searchParams.append('index', index);
+      url.searchParams.append('name', name);
+      window.location.href = url;
+    }
 
     // delete title function
     function deleteTitle(index) {

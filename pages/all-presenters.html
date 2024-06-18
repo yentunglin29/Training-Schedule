@@ -50,7 +50,7 @@
           listItem.innerHTML = `
             ${presenter}
             <div>
-              <button class="btn btn-sm btn-warning">Edit</button>
+              <button class="btn btn-sm btn-warning" onclick="editPresenter(${index}, '${presenter}')">Edit</button>
               <button class="btn btn-sm btn-danger" onclick="deletePresenter(${index})">Delete</button>
             </div>
           `;
@@ -59,6 +59,14 @@
       })
       .catch(error => console.error('Error:', error));
       
+      // Function to redirect to edit page
+      function editPresenter(index, name) {
+        const url = new URL('/pages/edit-presenter.html', window.location.origin);
+        url.searchParams.append('index', index);
+        url.searchParams.append('name', name);
+        window.location.href = url;
+      }
+
       function deletePresenter(index) {
       fetch('../database/presenters.json')
         .then(response => response.json())
