@@ -15,12 +15,12 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
-        <!-- <li class="nav-item">
+        <li class="nav-item">
           <a class="nav-link" href="/pages/add-course.html">Add Course</a>
-        </li> -->
-        <!-- <li class="nav-item">
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="/pages/add-presenter.html">Add Presenter</a>
-        </li> -->
+        </li>
         <li class="nav-item">
           <a class="nav-link" href="/pages/all-titles.html">Display All Titles</a>
         </li>
@@ -29,7 +29,7 @@
         </li>
       </ul>
     </div>
-  </nav>  
+  </nav>
 
   <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -40,24 +40,49 @@
   </div>
 
   <script>
+    // fetch titles from JSON
     fetch('../database/titles.json')
       .then(response => response.json())
       .then(data => {
         const titleList = document.getElementById('titleList');
-        data.forEach(title => {
+        data.forEach((title, index) => {
           const listItem = document.createElement('li');
           listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
           listItem.innerHTML = `
             ${title}
             <div>
               <button class="btn btn-sm btn-warning">Edit</button>
-              <button class="btn btn-sm btn-danger">Delete</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteTitle(${index})">Delete</button>
             </div>
           `;
           titleList.appendChild(listItem);
         });
       })
       .catch(error => console.error('Error:', error));
+
+    // delete title function
+    function deleteTitle(index) {
+      fetch('../database/titles.json')
+        .then(response => response.json())
+        .then(data => {
+          data.splice(index, 1); // Remove the title from the array
+          return fetch('http://localhost:3000/update-titles', { // Endpoint to update titles.json
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // Reload the page or update the UI to reflect changes
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+    }
   </script>
 </body>
 </html>

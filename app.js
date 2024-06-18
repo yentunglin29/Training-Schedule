@@ -7,9 +7,9 @@ const PORT = 3000;
 
 app.use(express.json());
 
-// Serve static files from the root and pages directories
+// serve static files from the root and pages directories
 app.use('/pages', express.static(path.join(__dirname, 'pages')));
-app.use(express.static(__dirname)); // Serve script.js
+app.use(express.static(__dirname)); // serve static files from root
 
 const readJSONFile = (relativePath) => {
   return new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ const writeJSONFile = (relativePath, data) => {
   });
 };
 
-// show title
+// show titles
 app.get('/titles', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -39,7 +39,7 @@ app.get('/titles', async (req, res) => {
   }
 });
 
-// show presenter
+// show presenters
 app.get('/presenters', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -85,7 +85,16 @@ app.post('/save', async (req, res) => {
   }
 });
 
-// start sderver
+// update titles
+app.post('/update-titles', async (req, res) => {
+  try {
+    await writeJSONFile('database/titles.json', req.body);
+    res.send('Titles updated successfully');
+  } catch (err) {
+    res.status(500).send('Failed to update titles');
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}/pages/index.html`);
 });
