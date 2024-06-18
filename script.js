@@ -66,7 +66,7 @@ document.getElementById('courseForm').addEventListener('submit', function(event)
   .then(data => {
     console.log('Saved:', data);
     alert('Course saved');
-    window.location.href = '/pages/index.html'; // save and redirect
+    window.location.href = '/pages/main.html'; // save and redirect
   })
   .catch(error => console.error('Error saving course:', error));
 });

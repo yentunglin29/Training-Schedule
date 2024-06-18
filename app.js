@@ -106,5 +106,5 @@ app.post('/update-presenters', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}/pages/index.html`);
+  console.log(`Server running on http://localhost:${PORT}/pages/main.html`);
 });

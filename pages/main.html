@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Presenter</title>
+  <title>Course Information</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
   <!-- menu bar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/pages/index.html">Home</a>
+    <a class="navbar-brand" href="/pages/main.html">Home</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -31,48 +31,9 @@
     </div>
   </nav>  
 
-  <div class="container mt-4">
-    <h1>Add Presenter</h1>
-    <form id="addPresenterForm">
-      <div class="form-group">
-        <label for="presenterName">Presenter Name:</label>
-        <input type="text" class="form-control" id="presenterName" name="presenterName" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Add Presenter</button>
-    </form>
-  </div>
-
-  <script>
-    document.getElementById('addPresenterForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const presenterName = document.getElementById('presenterName').value;
-
-      fetch('/add-presenter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: presenterName }),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.text();
-      })
-      .then(data => {
-        alert('Presenter added successfully: ' + data);
-        window.location.href = '/pages/add-new-course.html'; // Redirect to main page
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to add presenter. Please try again.');
-      });
-    });
-  </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 </html>
