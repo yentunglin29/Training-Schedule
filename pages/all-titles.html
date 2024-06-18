@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Presenter</title>
+  <title>Display All Course Titles</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -32,44 +32,29 @@
   </nav>  
 
   <div class="container mt-4">
-    <h1>Add Presenter</h1>
-    <form id="addPresenterForm">
-      <div class="form-group">
-        <label for="presenterName">Presenter Name:</label>
-        <input type="text" class="form-control" id="presenterName" name="presenterName" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Add Presenter</button>
-    </form>
+    <h1>All Course Titles</h1>
+    <ul id="titleList" class="list-group"></ul>
   </div>
 
   <script>
-    document.getElementById('addPresenterForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const presenterName = document.getElementById('presenterName').value;
-
-      fetch('/add-presenter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: presenterName }),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.text();
-      })
+    fetch('../database/titles.json')
+      .then(response => response.json())
       .then(data => {
-        alert('Presenter added successfully: ' + data);
-        window.location.href = '/pages/index.html'; // Redirect to main page
+        const titleList = document.getElementById('titleList');
+        data.forEach(title => {
+          const listItem = document.createElement('li');
+          listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+          listItem.innerHTML = `
+            ${title}
+            <div>
+              <button class="btn btn-sm btn-warning">Edit</button>
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </div>
+          `;
+          titleList.appendChild(listItem);
+        });
       })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to add presenter. Please try again.');
-      });
-    });
+      .catch(error => console.error('Error:', error));
   </script>
 </body>
 </html>
