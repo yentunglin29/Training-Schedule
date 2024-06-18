@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3001; // 使用未占用的端口
+const PORT = 3000;
 
 app.use(express.json());
 
@@ -11,7 +11,6 @@ app.use(express.json());
 app.use('/pages', express.static(path.join(__dirname, 'pages')));
 app.use(express.static(__dirname)); // Serve script.js
 
-// 辅助函数
 const readJSONFile = (relativePath) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path.join(__dirname, relativePath), 'utf-8', (err, data) => {
@@ -30,7 +29,7 @@ const writeJSONFile = (relativePath, data) => {
   });
 };
 
-// 提供现有课程标题
+// show title
 app.get('/titles', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -40,7 +39,7 @@ app.get('/titles', async (req, res) => {
   }
 });
 
-// 提供现有演讲者
+// show presenter
 app.get('/presenters', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -50,7 +49,7 @@ app.get('/presenters', async (req, res) => {
   }
 });
 
-// 添加新课程标题
+// add new course title
 app.post('/add-course', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -62,7 +61,7 @@ app.post('/add-course', async (req, res) => {
   }
 });
 
-// 添加新演讲者
+// add new presenter
 app.post('/add-presenter', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -74,7 +73,7 @@ app.post('/add-presenter', async (req, res) => {
   }
 });
 
-// 保存课程数据
+// save course info
 app.post('/save', async (req, res) => {
   try {
     const courses = await readJSONFile('database/courses.json');
@@ -86,7 +85,7 @@ app.post('/save', async (req, res) => {
   }
 });
 
-// 启动服务器
+// start sderver
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}/pages/index.html`);
 });

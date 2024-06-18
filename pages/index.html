@@ -39,11 +39,12 @@
       </div>
       <div class="form-group">
         <label for="content">Content:</label>
-        <input type="text" class="form-control" id="content" name="content" required>
+        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
       </div>
       <div class="form-group">
         <label for="duration">Duration (min):</label>
-        <input type="number" class="form-control" id="duration" name="duration" required>
+        <input type="number" class="form-control" id="duration" name="duration" min="5" max="480" required>
+        <small class="form-text text-muted">Please enter a duration between 5 and 480 minutes.</small>
       </div>
       <div class="form-group">
         <label for="presenter">Presenter:</label>

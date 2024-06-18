@@ -31,12 +31,22 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('courseForm').addEventListener('submit', function(event) {
   event.preventDefault();
 
+  const durationInput = document.getElementById('duration');
+  const durationValue = parseInt(durationInput.value);
+
+  // let duration 5 - 480
+  if (durationValue < 5 || durationValue > 480) {
+    alert('Duration must be between 5 and 480 minutes.');
+    durationInput.focus();
+    return;
+  }
+
   const formData = new FormData(event.target);
   const course = {
     title: formData.get('title'),
     topic: formData.get('topic'),
     content: formData.get('content'),
-    duration: parseInt(formData.get('duration')),
+    duration: durationValue,
     presenter: Array.from(formData.getAll('presenter'))
   };
 
