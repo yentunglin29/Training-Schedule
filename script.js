@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // add title
+  // Fetch and populate titles
   fetch('/titles')
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json();
+    })
     .then(titles => {
       const titleSelect = document.getElementById('title');
       titles.forEach(title => {
@@ -13,16 +18,36 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => console.error('Error fetching titles:', error));
 
-  // add presenter
+  // Fetch and populate presenters
   fetch('/presenters')
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json();
+    })
     .then(presenters => {
-      const presenterSelect = document.getElementById('presenter');
+      const presenterList = document.getElementById('presenterList');
+      presenterList.innerHTML = ''; // Clear any existing content
       presenters.forEach(presenter => {
-        const option = document.createElement('option');
-        option.value = presenter;
-        option.text = presenter;
-        presenterSelect.add(option);
+        const checkboxWrapper = document.createElement('div');
+        checkboxWrapper.className = 'form-check';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'form-check-input';
+        checkbox.id = `presenter-${presenter}`;
+        checkbox.value = presenter;
+        checkbox.name = 'presenter';
+
+        const label = document.createElement('label');
+        label.className = 'form-check-label';
+        label.htmlFor = `presenter-${presenter}`;
+        label.textContent = presenter;
+
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        presenterList.appendChild(checkboxWrapper);
       });
     })
     .catch(error => console.error('Error fetching presenters:', error));
@@ -55,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       presenter: presenters // Array of selected presenters
     };
 
-    fetch('/save', {
+    fetch('/save', { // Replace with your API endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

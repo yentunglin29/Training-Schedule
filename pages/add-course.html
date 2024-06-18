@@ -54,7 +54,12 @@
 
     // Fetch presenters and populate checkboxes
     fetch('../database/presenters.json')
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
       .then(presenters => {
         const presenterList = document.getElementById('presenterList');
         presenterList.innerHTML = ''; // Clear any existing content
@@ -79,7 +84,7 @@
           presenterList.appendChild(checkboxWrapper);
         });
       })
-      .catch(error => console.error('Error loading presenters:', error));
+      .catch(error => console.error('Error fetching presenters:', error));
   </script>
 </body>
 </html>
