@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // 加载课程标题
+  // add title
   fetch('/titles')
     .then(response => response.json())
     .then(titles => {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => console.error('Error fetching titles:', error));
 
-  // 加载演讲者
+  // add presenter
   fetch('/presenters')
     .then(response => response.json())
     .then(presenters => {
@@ -66,7 +66,7 @@ document.getElementById('courseForm').addEventListener('submit', function(event)
   .then(data => {
     console.log('Saved:', data);
     alert('Course saved');
-    window.location.href = '/pages/index.html'; // 保存成功后重定向到主页
+    window.location.href = '/pages/index.html'; // save and redirect
   })
   .catch(error => console.error('Error saving course:', error));
 });
