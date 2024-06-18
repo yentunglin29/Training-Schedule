@@ -208,5 +208,14 @@
       table.querySelectorAll('thead th')[colIndex + 1].innerText = inputElement.value;
     }
   </script>
+  <script>
+    // JavaScript to dynamically load menu bar
+    fetch('menu.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('menu-bar').innerHTML = data;
+      })
+      .catch(error => console.error('Error loading menu:', error));
+  </script>
 </body>
 </html>
