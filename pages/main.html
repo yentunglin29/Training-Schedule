@@ -59,12 +59,12 @@
       padding: 10px;
     }
     #courseDetails {
-  display: none;
-  border: 1px solid #ddd;
-  padding: 10px;
-  max-height: 500px; /* 調整大小 */
-  overflow-y: auto;
-}
+      display: none;
+      border: 1px solid #ddd;
+      padding: 10px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
 
   </style>
 </head>
@@ -122,6 +122,11 @@
           </tbody>
         </table>
         <div id="addRowBtn" onclick="addRow()">+</div>
+        
+        <!-- save button -->
+        <div id="saveButtonContainer">
+          <button id="saveButton" class="btn btn-success">Save</button>
+        </div>
       </div>
       <div class="content-sidebar">
         <div class="form-group">
@@ -138,6 +143,11 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
+  <!-- excel file -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
   <script>
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
@@ -298,6 +308,55 @@
         drag(event);
       }
     });
+
+    document.getElementById('saveButton').addEventListener('click', function() {
+  const filename = prompt('Please enter the name of the file:', 'schedule');
+  if (!filename) return;
+
+  // 取得表格數據
+  const table = document.getElementById('scheduleTable');
+  const rows = table.querySelectorAll('tbody tr');
+
+  const data = Array.from(rows).map(row => {
+    const cells = row.querySelectorAll('td');
+    return {
+      from: cells[0].innerText,
+      to: cells[1].innerText,
+      topics: cells[2].innerText,
+      content: cells[3].innerText,
+      presenter: cells[4].innerText,
+    };
+  });
+
+  // 發送數據到伺服器保存 JSON 文件
+  fetch('http://localhost:3000/save-json', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ filename, data }),
+  })
+  .then(response => response.text())
+  .then(result => {
+    console.log(result);
+  })
+  .catch(error => console.error('Error saving JSON file:', error));
+
+  // 發送數據到伺服器保存 Excel 文件
+  fetch('http://localhost:3000/save-excel', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ filename, data }),
+  })
+  .then(response => response.text())
+  .then(result => {
+    console.log(result);
+  })
+  .catch(error => console.error('Error saving Excel file:', error));
+});
+
   </script>
 </body>
 </html>
