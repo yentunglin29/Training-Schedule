@@ -37,6 +37,26 @@
       background-color: #f8f9fa;
       border: 2px dashed #ced4da;
     }
+    #addRowBtn {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    /* Add scrollbar for course details */
+    #courseDetails {
+      max-height: 500px; /* Adjust as needed */
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -59,37 +79,40 @@
           </thead>
           <tbody>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>09:00</td>
-              <td>12:00</td>
+              <td>
+                <input type="text" id="fromTime1" value="09:00" class="form-control" title="From Time" placeholder="HH:MM" onkeypress="setTime(event)">
+              </td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>12:00</td>
-              <td>13:00</td>
+              <td></td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>13:00</td>
-              <td>15:00</td>
+              <td></td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>15:00</td>
-              <td>15:10</td>
+              <td></td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>15:10</td>
-              <td>17:00</td>
+              <td></td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
             <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td>17:00</td>
-              <td>18:00</td>
+              <td></td>
+              <td></td>
               <td colspan="3"></td>
             </tr>
           </tbody>
         </table>
+        <div id="addRowBtn" onclick="addRow()">+</div>
       </div>
       <div class="content-sidebar">
         <div class="form-group">
@@ -183,14 +206,80 @@
       if (courseData) {
         const course = JSON.parse(courseData);
         const dropzone = event.target.closest('.dropzone');
+        const fromTimeCell = dropzone.children[0];
+        const fromTime = fromTimeCell.querySelector('input') ? fromTimeCell.querySelector('input').value : fromTimeCell.innerText;
+        const fromTimeMinutes = convertTimeToMinutes(fromTime);
+        const toTimeMinutes = fromTimeMinutes + parseInt(course.duration);
+        const toTime = convertMinutesToTime(toTimeMinutes);
+
         dropzone.innerHTML = `
-          <td>${dropzone.children[0].innerHTML}</td>
-          <td>${dropzone.children[1].innerHTML}</td>
+          <td>${fromTime}</td>
+          <td>${toTime}</td>
           <td>${course.topic}</td>
           <td>${course.content}</td>
           <td>${course.presenter.join(', ')}</td>
         `;
+
+        updateFollowingRows(dropzone, toTime);
       }
+    }
+
+    function setTime(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const fromTimeInput = event.target;
+        const fromTime = fromTimeInput.value;
+        const dropzone = fromTimeInput.closest('.dropzone');
+        dropzone.children[0].innerHTML = fromTime;
+        fromTimeInput.remove();
+        updateFollowingRows(dropzone, fromTime);
+      }
+    }
+
+    function addRow() {
+      const tableBody = document.querySelector('#scheduleTable tbody');
+      const lastRow = tableBody.lastElementChild;
+      const newRow = document.createElement('tr');
+      newRow.classList.add('dropzone');
+      newRow.setAttribute('ondrop', 'drop(event)');
+      newRow.setAttribute('ondragover', 'allowDrop(event)');
+      newRow.innerHTML = `
+        <td></td>
+        <td></td>
+        <td colspan="3"></td>
+      `;
+      tableBody.insertBefore(newRow, lastRow.nextSibling);
+    }
+
+    function updateFollowingRows(startRow, startTime) {
+      let currentTime = startTime;
+      const rows = startRow.parentElement.children;
+      let index = Array.from(rows).indexOf(startRow) + 1;
+      while (index < rows.length) {
+        const row = rows[index];
+        if (row.classList.contains('dropzone')) {
+          const cells = row.children;
+          cells[0].innerText = currentTime;
+          cells[1].innerText = '';
+          index++;
+          currentTime = cells[1].innerText || currentTime;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Convert HH:MM to total minutes
+    function convertTimeToMinutes(time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
+    // Convert total minutes to HH:MM
+    function convertMinutesToTime(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     }
 
     // Apply drag start listener to dynamically created course elements
