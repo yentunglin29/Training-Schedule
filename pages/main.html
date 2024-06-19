@@ -10,11 +10,32 @@
       display: flex;
     }
     .content-main {
-      flex: 1;
+      flex: 2;
     }
     .content-sidebar {
       width: 300px;
       margin-left: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: center;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .draggable {
+      cursor: grab;
+    }
+    .dropzone {
+      min-height: 50px;
+      background-color: #f8f9fa;
+      border: 2px dashed #ced4da;
     }
   </style>
 </head>
@@ -25,7 +46,50 @@
     <h1>Main Page</h1>
     <div class="content">
       <div class="content-main">
-        <!-- Main content goes here -->
+        <!-- Left side table for scheduling courses -->
+        <table id="scheduleTable">
+          <thead>
+            <tr>
+              <th>From</th>
+              <th>To</th>
+              <th>Topics</th>
+              <th>Content</th>
+              <th>Presenter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>09:00</td>
+              <td>12:00</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>12:00</td>
+              <td>13:00</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>13:00</td>
+              <td>15:00</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>15:00</td>
+              <td>15:10</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>15:10</td>
+              <td>17:00</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td>17:00</td>
+              <td>18:00</td>
+              <td colspan="3"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="content-sidebar">
         <div class="form-group">
@@ -82,7 +146,9 @@
             if (relatedCourses.length > 0) {
               relatedCourses.forEach(course => {
                 const courseElement = document.createElement('div');
-                courseElement.classList.add('course-detail');
+                courseElement.classList.add('course-detail', 'draggable');
+                courseElement.draggable = true;
+                courseElement.dataset.course = JSON.stringify(course);
 
                 courseElement.innerHTML = `
                   <h5>${course.title}</h5>
@@ -99,6 +165,38 @@
             }
           })
           .catch(error => console.error('Error fetching courses:', error));
+      }
+    });
+
+    // Drag and Drop functions
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.dataset.course);
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const courseData = event.dataTransfer.getData("text");
+      if (courseData) {
+        const course = JSON.parse(courseData);
+        const dropzone = event.target.closest('.dropzone');
+        dropzone.innerHTML = `
+          <td>${dropzone.children[0].innerHTML}</td>
+          <td>${dropzone.children[1].innerHTML}</td>
+          <td>${course.topic}</td>
+          <td>${course.content}</td>
+          <td>${course.presenter.join(', ')}</td>
+        `;
+      }
+    }
+
+    // Apply drag start listener to dynamically created course elements
+    document.addEventListener('dragstart', function(event) {
+      if (event.target.classList.contains('draggable')) {
+        drag(event);
       }
     });
   </script>
