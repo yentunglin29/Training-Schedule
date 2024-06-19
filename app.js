@@ -1,9 +1,23 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const XLSX = require('xlsx');
 
 const app = express();
 const PORT = 3000;
+
+// 設置 Multer 來保存文件
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'schedule/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
 
 app.use(express.json());
 
@@ -113,6 +127,29 @@ app.post('/update-presenters', async (req, res) => {
   } catch (err) {
     res.status(500).send('Failed to update presenters');
   }
+});
+
+// 保存 JSON 文件的 API
+app.post('/save-json', (req, res) => {
+  const { filename, data } = req.body;
+  const filePath = path.join(__dirname, 'schedule', `${filename}.json`);
+  fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
+    if (err) {
+      return res.status(500).send('Error saving file');
+    }
+    res.send('File saved successfully');
+  });
+});
+
+// 保存 Excel 文件的 API
+app.post('/save-excel', (req, res) => {
+  const { filename, data } = req.body;
+  const filePath = path.join(__dirname, 'schedule', `${filename}.xlsx`);
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Schedule');
+  XLSX.writeFile(workbook, filePath);
+  res.send('File saved successfully');
 });
 
 app.listen(PORT, () => {
