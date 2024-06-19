@@ -37,6 +37,26 @@
       background-color: #f8f9fa;
       border: 2px dashed #ced4da;
     }
+    #addRowBtn {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    /* Add scrollbar for course details */
+    #courseDetails {
+      max-height: 500px; /* Adjust as needed */
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -85,8 +105,14 @@
               <td></td>
               <td colspan="3"></td>
             </tr>
+            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+              <td></td>
+              <td></td>
+              <td colspan="3"></td>
+            </tr>
           </tbody>
         </table>
+        <div id="addRowBtn" onclick="addRow()">+</div>
       </div>
       <div class="content-sidebar">
         <div class="form-group">
@@ -95,9 +121,7 @@
             <option value="">Choose a title</option>
           </select>
         </div>
-        <div id="courseDetails">
-          <!-- Course details will be populated here -->
-        </div>
+        <div id="courseDetails"></div>
       </div>
     </div>
   </div>
@@ -209,6 +233,21 @@
       }
     }
 
+    function addRow() {
+      const tableBody = document.querySelector('#scheduleTable tbody');
+      const lastRow = tableBody.lastElementChild;
+      const newRow = document.createElement('tr');
+      newRow.classList.add('dropzone');
+      newRow.setAttribute('ondrop', 'drop(event)');
+      newRow.setAttribute('ondragover', 'allowDrop(event)');
+      newRow.innerHTML = `
+        <td></td>
+        <td></td>
+        <td colspan="3"></td>
+      `;
+      tableBody.insertBefore(newRow, lastRow.nextSibling);
+    }
+
     function updateFollowingRows(startRow, startTime) {
       let currentTime = startTime;
       const rows = startRow.parentElement.children;
@@ -221,9 +260,6 @@
           cells[1].innerText = '';
           index++;
           currentTime = cells[1].innerText || currentTime;
-        } else if (index + 1 < rows.length && rows[index + 1].classList.contains('dropzone')) {
-          currentTime = rows[index + 1].children[0].innerText || currentTime;
-          index += 2;
         } else {
           break;
         }
