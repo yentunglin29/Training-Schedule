@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Main Page</title>
+  <title>Planner</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <style>
     .content {
@@ -58,21 +58,21 @@
       border: 1px solid #ddd;
       padding: 10px;
     }
-    #courseDetails {
+    #notification {
       display: none;
-      border: 1px solid #ddd;
+      margin-top: 20px;
       padding: 10px;
-      max-height: 500px;
-      overflow-y: auto;
+      border: 1px solid #28a745;
+      background-color: #d4edda;
+      color: #155724;
     }
-
   </style>
 </head>
 <body>
   <div id="menu-bar"></div>
 
   <div class="container mt-4">
-    <h1>Main Page</h1>
+    <h1>Planner</h1>
     <div class="content">
       <div class="content-main">
         <!-- Left side table for scheduling courses -->
@@ -94,31 +94,6 @@
               <td></td>
               <td colspan="3"></td>
             </tr>
-            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td></td>
-              <td></td>
-              <td colspan="3"></td>
-            </tr>
-            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td></td>
-              <td></td>
-              <td colspan="3"></td>
-            </tr>
-            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td></td>
-              <td></td>
-              <td colspan="3"></td>
-            </tr>
-            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td></td>
-              <td></td>
-              <td colspan="3"></td>
-            </tr>
-            <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <td></td>
-              <td></td>
-              <td colspan="3"></td>
-            </tr>
           </tbody>
         </table>
         <div id="addRowBtn" onclick="addRow()">+</div>
@@ -127,6 +102,8 @@
         <div id="saveButtonContainer">
           <button id="saveButton" class="btn btn-success">Save</button>
         </div>
+        <!-- notification -->
+        <div id="notification">計劃已成功保存並清空表格。</div>
       </div>
       <div class="content-sidebar">
         <div class="form-group">
@@ -143,11 +120,6 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
-  <!-- excel file -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-
   <script>
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
@@ -339,24 +311,34 @@
       .then(response => response.text())
       .then(result => {
         console.log(result);
+        // 清空表格
+        clearTable();
+        // 顯示通知
+        showNotification();
       })
       .catch(error => console.error('Error saving JSON file:', error));
-
-      // 發送數據到伺服器保存 Excel 文件
-      fetch('http://localhost:3000/save-excel', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ filename, data }),
-      })
-      .then(response => response.text())
-      .then(result => {
-        console.log(result);
-      })
-      .catch(error => console.error('Error saving Excel file:', error));
     });
 
+    function clearTable() {
+      const tableBody = document.querySelector('#scheduleTable tbody');
+      tableBody.innerHTML = `
+        <tr class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <td>
+            <input type="text" id="fromTime1" value="09:00" class="form-control" title="From Time" placeholder="HH:MM" onkeypress="setTime(event)">
+          </td>
+          <td></td>
+          <td colspan="3"></td>
+        </tr>
+      `;
+    }
+
+    function showNotification() {
+      const notification = document.getElementById('notification');
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000); // 3秒後隱藏
+    }
   </script>
 </body>
 </html>
