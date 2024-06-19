@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>訂餐與住宿統計表</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+
   <style>
     table {
       width: 100%;
@@ -19,46 +21,6 @@
     th {
       background-color: #f2f2f2;
     }
-    #add-table-btn {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-    }
-    .table-wrapper {
-      position: relative;
-    }
-    .remove-table-btn {
-      position: absolute;
-      left: -20px;
-      top: 10px;
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-    }
-    #tables-container {
-      margin-bottom: 80px; /* Add space for the floating button */
-    }
   </style>
 </head>
 <body>
@@ -66,84 +28,118 @@
 
   <div class="container mt-4">
     <h1>訂餐與住宿統計表</h1>
-    <div id="tables-container">
-      <!-- Tables will be populated by JavaScript -->
+
+    <!-- 日期選擇器 -->
+    <div class="form-group">
+      <label for="datepicker">選擇日期:</label>
+      <input type="text" id="datepicker" class="form-control" placeholder="選擇日期範圍">
     </div>
-    <button id="add-table-btn" onclick="addTable()">+</button>
+    <button id="generateTableBtn" class="btn btn-primary">生成表格</button>
+
+    <!-- 容納表格 -->
+    <div id="tables-container">
+      <!-- Table will be populated by JavaScript -->
+    </div>
   </div>
 
-  <script>
-    // Default rows data
-    const defaultRowsData = [
-      { title: '受訓-新進人員', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '受訓-新進人員(線上)', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '受訓-業務人員(旁聽)', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '住宿 -', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '行銷+行政(含珊珊)', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '受邀講師', values: [0, 0, 0, 0, 0, 0, 0] },
-      { title: '不在人員(請填上姓名及特殊備註)', values: [0, 0, 0, 0, 0, 0, 0] }
-    ];
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.zh-TW.min.js"></script>
 
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initial table
-      addTable();
+  <script>
+    // 日期選擇器設置
+    $('#datepicker').datepicker({
+      format: 'yyyy-mm-dd',
+      language: 'zh-TW',
+      multidate: true,
+      multidateSeparator: ',',
+      todayHighlight: true
     });
 
-    // Add a new table
-    function addTable() {
+    // 預設行數據
+    const defaultRowsData = [
+      { title: '受訓-新進人員', values: [] },
+      { title: '受訓-新進人員(線上)', values: [] },
+      { title: '受訓-業務人員(旁聽)', values: [] },
+      { title: '住宿 -', values: [] },
+      { title: '行銷+行政(含珊珊)', values: [] },
+      { title: '受邀講師', values: [] },
+      { title: '不在人員(請填上姓名及特殊備註)', values: [] }
+    ];
+
+    // 生成表格
+    document.getElementById('generateTableBtn').addEventListener('click', function() {
+      const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate);
+      const tablesContainer = document.getElementById('tables-container');
+      tablesContainer.innerHTML = ''; // 清空之前的表格
+
+      addTable(selectedDates);
+    });
+
+    // 格式化日期為 yyyy-mm-dd
+    function formatDate(date) {
+      const d = new Date(date);
+      const month = '' + (d.getMonth() + 1);
+      const day = '' + d.getDate();
+      const year = d.getFullYear();
+
+      return [year, (month.length < 2 ? '0' : '') + month, (day.length < 2 ? '0' : '') + day].join('-');
+    }
+
+    // 添加新的表格
+    function addTable(dates) {
       const tablesContainer = document.getElementById('tables-container');
       const tableElement = document.createElement('div');
       tableElement.classList.add('table-wrapper');
 
-      // Determine if a remove button is needed
-      if (tablesContainer.children.length > 0) {
-        const removeBtn = document.createElement('button');
-        removeBtn.innerText = '-';
-        removeBtn.classList.add('remove-table-btn');
-        removeBtn.onclick = () => tableElement.remove();
-        tableElement.appendChild(removeBtn);
-      }
-
-      const tableHTML = createTableHTML(defaultRowsData);
-      tableElement.innerHTML += tableHTML;
+      tableElement.innerHTML = createTableHTML(defaultRowsData, dates);
       tablesContainer.appendChild(tableElement);
 
-      // Recalculate totals for the new table
+      // 計算新表格的總數
       tableElement.querySelectorAll('select').forEach(select => calculateTotal(select));
     }
 
-    // Create table HTML string
-    function createTableHTML(rowsData) {
-      const tableId = 'table-' + document.querySelectorAll('table').length; // Unique table id
+    // 創建表格 HTML 字符串
+    function createTableHTML(rowsData, dates) {
       return `
-        <table id="${tableId}">
+        <table>
           <thead>
             <tr>
               <th> </th>
-              ${Array.from({ length: 7 }, (_, i) => `<th><input type="text" class="form-control" value="4/${i + 1}" onchange="updateDate(this, ${i}, '${tableId}')" style="width: 80px;"></th>`).join('')}
+              ${dates.map(date => `
+                <th>
+                  <input type="text" value="${date}" class="form-control" placeholder="月/日" style="width: 100px;" readonly>
+                </th>
+              `).join('')}
             </tr>
           </thead>
           <tbody>
             ${rowsData.map(rowData => `
               <tr>
                 <td>${rowData.title}</td>
-                ${rowData.values.map(value => `<td>${generateSelect(value)}</td>`).join('')}
+                ${dates.map(date => `
+                  <td>
+                    ${generateSelect(0)}
+                  </td>
+                `).join('')}
               </tr>
             `).join('')}
             <tr>
               <td><strong>total 人數</strong></td>
-              ${Array(7).fill('<td><strong>0</strong></td>').join('')}
+              ${dates.map(() => '<td><strong>0</strong></td>').join('')}
             </tr>
             <tr>
               <td><strong>Location</strong></td>
-              ${Array(7).fill(`<td>${generateCitySelect()}</td>`).join('')}
+              ${dates.map(() => `<td>${generateCitySelect()}</td>`).join('')}
             </tr>
           </tbody>
         </table>
       `;
     }
 
-    // Generate <select> element with numeric options
+    // 生成 <select> 元素
     function generateSelect(selected = 0) {
       let select = '<select class="form-control" onchange="calculateTotal(this)">';
       for (let i = 0; i <= 10; i++) {
@@ -153,7 +149,7 @@
       return select;
     }
 
-    // Generate <select> element with city options
+    // 生成城市選擇 <select> 元素
     function generateCitySelect() {
       const cities = ['台北', '台中', '高雄'];
       let select = '<select class="form-control">';
@@ -164,26 +160,19 @@
       return select;
     }
 
-    // Calculate total for each column
+    // 計算每一列的總數
     function calculateTotal(selectElement) {
       const table = selectElement.closest('table');
       const tbody = table.querySelector('tbody');
       const totalRow = tbody.querySelector('tr:nth-last-of-type(2)');
 
-      for (let colIndex = 1; colIndex <= 7; colIndex++) {
-        let total = 0;
-        tbody.querySelectorAll('tr:not(:nth-last-of-type(2)):not(:nth-last-of-type(1))').forEach(row => {
-          const select = row.children[colIndex].querySelector('select');
-          total += parseInt(select.value) || 0;
-        });
-        totalRow.children[colIndex].innerText = total;
-      }
-    }
-
-    // Update column header date
-    function updateDate(inputElement, colIndex, tableId) {
-      const table = document.getElementById(tableId);
-      table.querySelectorAll('thead th')[colIndex + 1].innerText = inputElement.value;
+      const colIndex = Array.from(selectElement.closest('tr').children).indexOf(selectElement.closest('td'));
+      let total = 0;
+      tbody.querySelectorAll('tr:not(:nth-last-of-type(2)):not(:nth-last-of-type(1))').forEach(row => {
+        const select = row.children[colIndex].querySelector('select');
+        total += parseInt(select.value) || 0;
+      });
+      totalRow.children[colIndex].innerText = total;
     }
   </script>
   <script>
