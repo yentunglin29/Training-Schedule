@@ -28,12 +28,14 @@
 
   <script>
     let courses = []; // 保存所有課程數據
+    let originalIndexes = []; // 保存課程的原始索引
 
     // 從 JSON 中加載課程
     fetch('../database/courses.json')
       .then(response => response.json())
       .then(data => {
         courses = data; // 保存到全局變量
+        originalIndexes = data.map((_, index) => index); // 初始化原始索引
         populateTitleFilter(); // 初始化標題過濾器
         displayCourses(courses); // 顯示所有課程
       })
@@ -63,13 +65,13 @@
             <div>
               <strong>Title:</strong> ${course.title}<br>
               <strong>Topic:</strong> ${course.topic}<br>
-              <strong>Content:</strong> ${course.content}<br>
+              <strong>Content:</strong> ${course.content.replace(/\n/g, '<br>')}<br>
               <strong>Duration:</strong> ${course.duration} mins<br>
               <strong>Presenter:</strong> ${course.presenter.join(', ')}
             </div>
             <div>
-              <button class="btn btn-sm btn-warning" onclick="editCourse(${index})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
+              <button class="btn btn-sm btn-warning" onclick="editCourse(${originalIndexes[index]})">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${originalIndexes[index]})">Delete</button>
             </div>
           </div>
         `;
@@ -83,6 +85,8 @@
       const filteredCourses = selectedTitle
         ? courses.filter(course => course.title === selectedTitle)
         : courses; // 顯示所有課程或過濾後的課程
+
+      originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
       displayCourses(filteredCourses);
     });
 
