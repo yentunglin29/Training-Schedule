@@ -310,52 +310,52 @@
     });
 
     document.getElementById('saveButton').addEventListener('click', function() {
-  const filename = prompt('Please enter the name of the file:', 'schedule');
-  if (!filename) return;
+      const filename = prompt('Please enter the name of the file:', 'schedule');
+      if (!filename) return;
 
-  // 取得表格數據
-  const table = document.getElementById('scheduleTable');
-  const rows = table.querySelectorAll('tbody tr');
+      // 取得表格數據
+      const table = document.getElementById('scheduleTable');
+      const rows = table.querySelectorAll('tbody tr');
 
-  const data = Array.from(rows).map(row => {
-    const cells = row.querySelectorAll('td');
-    return {
-      from: cells[0].innerText,
-      to: cells[1].innerText,
-      topics: cells[2].innerText,
-      content: cells[3].innerText,
-      presenter: cells[4].innerText,
-    };
-  });
+      const data = Array.from(rows).map(row => {
+        const cells = row.querySelectorAll('td');
+        return {
+          from: cells[0].innerText,
+          to: cells[1].innerText,
+          topics: cells[2].innerText,
+          content: cells[3].innerText,
+          presenter: cells[4].innerText,
+        };
+      });
 
-  // 發送數據到伺服器保存 JSON 文件
-  fetch('http://localhost:3000/save-json', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ filename, data }),
-  })
-  .then(response => response.text())
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => console.error('Error saving JSON file:', error));
+      // 發送數據到伺服器保存 JSON 文件
+      fetch('http://localhost:3000/save-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename, data }),
+      })
+      .then(response => response.text())
+      .then(result => {
+        console.log(result);
+      })
+      .catch(error => console.error('Error saving JSON file:', error));
 
-  // 發送數據到伺服器保存 Excel 文件
-  fetch('http://localhost:3000/save-excel', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ filename, data }),
-  })
-  .then(response => response.text())
-  .then(result => {
-    console.log(result);
-  })
-  .catch(error => console.error('Error saving Excel file:', error));
-});
+      // 發送數據到伺服器保存 Excel 文件
+      fetch('http://localhost:3000/save-excel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename, data }),
+      })
+      .then(response => response.text())
+      .then(result => {
+        console.log(result);
+      })
+      .catch(error => console.error('Error saving Excel file:', error));
+    });
 
   </script>
 </body>
