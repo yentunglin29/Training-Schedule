@@ -29,8 +29,8 @@
         <input type="number" class="form-control" id="courseDuration" name="courseDuration" required>
       </div>
       <div class="form-group">
-        <label for="coursePresenter">Course Presenter:</label>
-        <input type="text" class="form-control" id="coursePresenter" name="coursePresenter" required>
+        <label>Presenters:</label>
+        <div id="presenterList"></div>
       </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
@@ -41,15 +41,52 @@
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
 
-      fetch('../database/courses.json')
+      let course; // 變量來保存當前課程數據
+
+      // 從 JSON 文件中加載講者列表
+      fetch('../database/presenters.json')
+        .then(response => response.json())
+        .then(presenters => {
+          const presenterList = document.getElementById('presenterList');
+          presenters.forEach(presenter => {
+            const checkboxWrapper = document.createElement('div');
+            checkboxWrapper.className = 'form-check';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-check-input';
+            checkbox.id = `presenter-${presenter}`;
+            checkbox.value = presenter;
+            checkbox.name = 'presenter';
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = `presenter-${presenter}`;
+            label.textContent = presenter;
+
+            checkboxWrapper.appendChild(checkbox);
+            checkboxWrapper.appendChild(label);
+            presenterList.appendChild(checkboxWrapper);
+          });
+
+          // 加載當前課程數據並設置表單值
+          return fetch('../database/courses.json');
+        })
         .then(response => response.json())
         .then(data => {
-          const course = data[index];
+          course = data[index];
           document.getElementById('courseTitle').value = course.title;
           document.getElementById('courseTopic').value = course.topic;
           document.getElementById('courseContent').value = course.content;
           document.getElementById('courseDuration').value = course.duration;
-          document.getElementById('coursePresenter').value = course.presenter.join(', ');
+
+          // 設置已選中的講者
+          course.presenter.forEach(p => {
+            const checkbox = document.getElementById(`presenter-${p}`);
+            if (checkbox) {
+              checkbox.checked = true;
+            }
+          });
         })
         .catch(error => console.error('Error:', error));
 
@@ -61,14 +98,14 @@
           topic: document.getElementById('courseTopic').value,
           content: document.getElementById('courseContent').value,
           duration: parseInt(document.getElementById('courseDuration').value),
-          presenter: document.getElementById('coursePresenter').value.split(',').map(p => p.trim())
+          presenter: Array.from(document.querySelectorAll('#presenterList input:checked')).map(cb => cb.value)
         };
 
         fetch('../database/courses.json')
           .then(response => response.json())
           .then(data => {
-            data[index] = updatedCourse; // Update the course data
-            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+            data[index] = updatedCourse; // 更新課程數據
+            return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -86,9 +123,8 @@
           .catch(error => console.error('Error:', error));
       });
     });
-  </script>
-  <script>
-    // JavaScript to dynamically load menu bar
+
+    // 動態加載選單
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
