@@ -3,15 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Information</title>
+  <title>Main Page</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .content {
+      display: flex;
+    }
+    .content-main {
+      flex: 1;
+    }
+    .content-sidebar {
+      width: 300px;
+      margin-left: 20px;
+    }
+  </style>
 </head>
 <body>
   <div id="menu-bar"></div>
 
+  <div class="container mt-4">
+    <h1>Main Page</h1>
+    <div class="content">
+      <div class="content-main">
+        <!-- Main content goes here -->
+      </div>
+      <div class="content-sidebar">
+        <div class="form-group">
+          <label for="titleSelect">Select Title:</label>
+          <select id="titleSelect" class="form-control">
+            <option value="">Choose a title</option>
+          </select>
+        </div>
+        <div id="courseDetails">
+          <!-- Course details will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="../script.js"></script>
   <script>
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
@@ -20,6 +53,54 @@
         document.getElementById('menu-bar').innerHTML = data;
       })
       .catch(error => console.error('Error loading menu:', error));
+
+    // Load titles from titles.json
+    fetch('../database/titles.json')
+      .then(response => response.json())
+      .then(titles => {
+        const titleSelect = document.getElementById('titleSelect');
+        titles.forEach(title => {
+          const option = document.createElement('option');
+          option.value = title;
+          option.text = title;
+          titleSelect.add(option);
+        });
+      })
+      .catch(error => console.error('Error fetching titles:', error));
+
+    // Handle title selection and show course details
+    document.getElementById('titleSelect').addEventListener('change', function() {
+      const selectedTitle = this.value;
+      const courseDetailsContainer = document.getElementById('courseDetails');
+      courseDetailsContainer.innerHTML = ''; // Clear previous details
+
+      if (selectedTitle) {
+        fetch('../database/courses.json')
+          .then(response => response.json())
+          .then(courses => {
+            const relatedCourses = courses.filter(course => course.title === selectedTitle);
+            if (relatedCourses.length > 0) {
+              relatedCourses.forEach(course => {
+                const courseElement = document.createElement('div');
+                courseElement.classList.add('course-detail');
+
+                courseElement.innerHTML = `
+                  <h5>${course.title}</h5>
+                  <p><strong>Topic:</strong> ${course.topic}</p>
+                  <p><strong>Content:</strong> ${course.content}</p>
+                  <p><strong>Duration:</strong> ${course.duration} minutes</p>
+                  <p><strong>Presenters:</strong> ${course.presenter.join(', ')}</p>
+                `;
+
+                courseDetailsContainer.appendChild(courseElement);
+              });
+            } else {
+              courseDetailsContainer.innerHTML = '<p>No courses found for this title.</p>';
+            }
+          })
+          .catch(error => console.error('Error fetching courses:', error));
+      }
+    });
   </script>
 </body>
 </html>
