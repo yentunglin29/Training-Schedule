@@ -14,52 +14,92 @@
       <h1>All Courses</h1>
       <a href="/pages/add-course.html" class="btn btn-primary">Add New Course</a>
     </div>
+
+    <!-- 添加過濾器 -->
+    <div class="mb-3">
+      <label for="titleFilter" class="form-label">Filter by Title:</label>
+      <select id="titleFilter" class="form-control">
+        <option value="">All Titles</option>
+      </select>
+    </div>
+
     <ul id="courseList" class="list-group"></ul>
   </div>
 
   <script>
-    // Fetch courses from JSON
+    let courses = []; // 保存所有課程數據
+
+    // 從 JSON 中加載課程
     fetch('../database/courses.json')
       .then(response => response.json())
       .then(data => {
-        const courseList = document.getElementById('courseList');
-        data.forEach((course, index) => {
-          const listItem = document.createElement('li');
-          listItem.className = 'list-group-item';
-          listItem.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <strong>Title:</strong> ${course.title}<br>
-                <strong>Topic:</strong> ${course.topic}<br>
-                <strong>Content:</strong> ${course.content}<br>
-                <strong>Duration:</strong> ${course.duration} mins<br>
-                <strong>Presenter:</strong> ${course.presenter.join(', ')}
-              </div>
-              <div>
-                <button class="btn btn-sm btn-warning" onclick="editCourse(${index})">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
-              </div>
-            </div>
-          `;
-          courseList.appendChild(listItem);
-        });
+        courses = data; // 保存到全局變量
+        populateTitleFilter(); // 初始化標題過濾器
+        displayCourses(courses); // 顯示所有課程
       })
       .catch(error => console.error('Error:', error));
 
-    // Function to redirect to edit page
+    // 填充標題過濾器
+    function populateTitleFilter() {
+      const titleFilter = document.getElementById('titleFilter');
+      const titles = [...new Set(courses.map(course => course.title))];
+      titles.forEach(title => {
+        const option = document.createElement('option');
+        option.value = title;
+        option.textContent = title;
+        titleFilter.appendChild(option);
+      });
+    }
+
+    // 顯示課程列表
+    function displayCourses(courseArray) {
+      const courseList = document.getElementById('courseList');
+      courseList.innerHTML = ''; // 清空現有內容
+      courseArray.forEach((course, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>Title:</strong> ${course.title}<br>
+              <strong>Topic:</strong> ${course.topic}<br>
+              <strong>Content:</strong> ${course.content}<br>
+              <strong>Duration:</strong> ${course.duration} mins<br>
+              <strong>Presenter:</strong> ${course.presenter.join(', ')}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-warning" onclick="editCourse(${index})">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
+            </div>
+          </div>
+        `;
+        courseList.appendChild(listItem);
+      });
+    }
+
+    // 過濾課程
+    document.getElementById('titleFilter').addEventListener('change', function() {
+      const selectedTitle = this.value;
+      const filteredCourses = selectedTitle
+        ? courses.filter(course => course.title === selectedTitle)
+        : courses; // 顯示所有課程或過濾後的課程
+      displayCourses(filteredCourses);
+    });
+
+    // 跳轉到編輯頁面
     function editCourse(index) {
       const url = new URL('/pages/edit-course.html', window.location.origin);
       url.searchParams.append('index', index);
       window.location.href = url;
     }
 
-    // Delete course function
+    // 刪除課程
     function deleteCourse(index) {
       fetch('../database/courses.json')
         .then(response => response.json())
         .then(data => {
-          data.splice(index, 1); // Remove the course from the array
-          return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+          data.splice(index, 1); // 移除課程
+          return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -71,17 +111,18 @@
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          // Reload the page or update the UI to reflect changes
+          // 重新加載頁面或更新 UI
           window.location.reload();
         })
         .catch(error => console.error('Error:', error));
     }
   </script>
+
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
-    // JavaScript to dynamically load menu bar
+    // 動態加載選單
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
