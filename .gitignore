@@ -1,8 +1,8 @@
 # Ignore Node Modules
 node_modules/
-package-lock.json
-connection.txt
-/database
 /schedule
+
+package-lock.json
+
+connection.txt
 to-do.txt
-database/
