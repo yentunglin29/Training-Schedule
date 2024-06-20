@@ -129,12 +129,30 @@ app.post('/update-presenters', async (req, res) => {
   }
 });
 
-// 保存 JSON 文件的 API
+// // 保存 JSON 文件的 API
+// app.post('/save-json', (req, res) => {
+//   const { filename, data } = req.body;
+//   const filePath = path.join(__dirname, 'schedule', `${filename}.json`);
+//   fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
+//     if (err) {
+//       return res.status(500).send('Error saving file');
+//     }
+//     res.send('File saved successfully');
+//   });
+// });
+
+// 保存 JSON 文件的端点
 app.post('/save-json', (req, res) => {
-  const { filename, data } = req.body;
-  const filePath = path.join(__dirname, 'schedule', `${filename}.json`);
-  fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
+  const { filename, content } = req.body;
+  if (!filename || !content) {
+    return res.status(400).send('Invalid request: filename and content are required');
+  }
+
+  const filePath = path.join(__dirname, 'schedule', filename);
+
+  fs.writeFile(filePath, content, 'utf8', (err) => {
     if (err) {
+      console.error('Error writing file:', err);
       return res.status(500).send('Error saving file');
     }
     res.send('File saved successfully');

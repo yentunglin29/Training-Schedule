@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Editor</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #dddddd;
+      text-align: center;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    td[contenteditable="true"] {
+      background-color: #eaf7ff;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>JSON Schedule Editor</h1>
+    <div class="form-group">
+      <label for="jsonFile">Select JSON File:</label>
+      <input type="file" id="jsonFile" class="form-control" accept=".json">
+    </div>
+    <div id="scheduleTableContainer" class="hidden">
+      <table id="scheduleTable">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Topics</th>
+            <th>Content</th>
+            <th>Presenter</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be added here dynamically -->
+        </tbody>
+      </table>
+      <button id="saveButton" class="btn btn-success">Save Changes</button>
+    </div>
+  </div>
+
+  <script>
+    let currentFilename = '';
+
+    document.getElementById('jsonFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        currentFilename = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const scheduleData = JSON.parse(e.target.result);
+            console.log('Loaded JSON data:', scheduleData); // 调试信息
+            if (Array.isArray(scheduleData)) {
+              loadSchedule(scheduleData);
+            } else {
+              throw new Error('Invalid schedule data format');
+            }
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+            alert('Invalid JSON format. Please check your JSON content.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function loadSchedule(data) {
+      if (!Array.isArray(data)) {
+        console.error('Invalid schedule data format:', data);
+        return;
+      }
+
+      const tableBody = document.querySelector('#scheduleTable tbody');
+      tableBody.innerHTML = ''; // 清空表格
+
+      data.forEach(row => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+          <td>${row.from}</td>
+          <td>${row.to}</td>
+          <td contenteditable="true">${row.topics}</td>
+          <td contenteditable="true">${row.content.replace(/\n/g, '<br>')}</td>
+          <td contenteditable="true">${row.presenter}</td>
+        `;
+        tableBody.appendChild(newRow);
+      });
+
+      document.getElementById('scheduleTableContainer').classList.remove('hidden');
+    }
+
+    document.getElementById('saveButton').addEventListener('click', function() {
+      const table = document.getElementById('scheduleTable');
+      const rows = table.querySelectorAll('tbody tr');
+
+      const data = Array.from(rows).map(row => {
+        const cells = row.querySelectorAll('td');
+        return {
+          from: cells[0].innerText,
+          to: cells[1].innerText,
+          topics: cells[2].innerText,
+          content: cells[3].innerHTML.replace(/<br>/g, '\n'),
+          presenter: cells[4].innerText,
+        };
+      });
+
+      const jsonContent = JSON.stringify(data, null, 2); // 格式化 JSON
+
+      fetch('http://localhost:3000/save-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: currentFilename, content: jsonContent }),
+      })
+      .then(response => response.text())
+      .then(result => {
+        alert('JSON file saved successfully!');
+      })
+      .catch(error => console.error('Error saving JSON file:', error));
+    });
+  </script>
+</body>
+</html>
