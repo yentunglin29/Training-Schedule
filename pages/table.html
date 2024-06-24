@@ -44,7 +44,7 @@
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://stackpath.herokuapp.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.zh-TW.min.js"></script>
 
@@ -63,15 +63,15 @@
       { title: '受訓-新進人員', values: [] },
       { title: '受訓-新進人員(線上)', values: [] },
       { title: '受訓-業務人員(旁聽)', values: [] },
-      { title: '住宿 -', values: [] },
+      { title: '住宿', values: [] },
       { title: '行銷+行政(含珊珊)', values: [] },
       { title: '受邀講師', values: [] },
-      { title: '不在人員(請填上姓名及特殊備註)', values: [] }
+      // { title: '不在人員(請填上姓名及特殊備註)', values: [] }
     ];
 
     // 生成表格
     document.getElementById('generateTableBtn').addEventListener('click', function() {
-      const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate);
+      const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate).sort(); // 确保日期排序
       const tablesContainer = document.getElementById('tables-container');
       tablesContainer.innerHTML = ''; // 清空之前的表格
 
