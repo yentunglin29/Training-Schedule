@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combined Planner</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+  <style>
+    .content {
+      display: flex;
+      position: relative;
+    }
+    .content-main {
+      flex: 2;
+      padding-right: 320px; /* To ensure the right sidebar is not overlapped */
+    }
+    .content-sidebar {
+      width: 300px;
+      position: sticky;
+      top: 20px;
+      height: 100vh;
+      overflow-y: auto;
+      margin-left: -320px; /* Move sidebar to the left by its width plus padding */
+    }
+    .day { margin: 10px 0; font-size: 18px; }
+    .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #dddddd; text-align: center; padding: 8px; }
+    th { background-color: #f2f2f2; }
+    .draggable { cursor: grab; }
+    .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; }
+    .download-btn { margin-top: 20px; }
+    .table-title { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div id="menu-bar"></div>
+
+  <div class="container mt-4">
+    <h1>Combined Planner</h1>
+
+    <!-- 日期選擇器 -->
+    <div class="form-group">
+      <label for="datepicker">選擇日期:</label>
+      <input type="text" id="datepicker" class="form-control" placeholder="選擇日期範圍">
+    </div>
+    <button id="generateScheduleBtn" class="btn btn-primary">生成日程表</button>
+
+    <div class="content">
+      <div class="content-main">
+        <!-- 容納日程表 -->
+        <div id="schedule-container">
+          <!-- Schedule will be populated by JavaScript -->
+        </div>
+        <button id="downloadPdfBtn" class="btn btn-success download-btn">下載 PDF</button>
+      </div>
+
+      <!-- 右側課程詳細信息 -->
+      <div class="content-sidebar">
+        <div class="form-group">
+          <label for="titleSelect">選擇標題:</label>
+          <select id="titleSelect" class="form-control">
+            <option value="">選擇標題</option>
+          </select>
+        </div>
+        <div id="courseDetails"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入腳本 -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.zh-TW.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vxe-table-plugin-export-pdf/fonts/source-han-sans-normal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const { jsPDF } = window.jspdf;
+
+      // PDF 下載功能
+      function downloadPdf() {
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        pdf.addFont('SourceHanSans-Normal.ttf', 'SourceHanSans-Normal', 'normal');
+        pdf.setFont('SourceHanSans-Normal');
+
+        const tables = document.querySelectorAll('#schedule-container .day');
+        tables.forEach((dayElement, index) => {
+          const day = dayElement.querySelector('.day-info').innerText;
+          const tableTitle = dayElement.querySelector('.table-title-input').value;
+          const table = dayElement.querySelector('.json-content table');
+          if (table) {
+            const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
+              return Array.from(tr.querySelectorAll('td, th')).map(td => td.innerText);
+            });
+            const header = rows.shift();
+
+            pdf.addPage();
+            pdf.autoTable({
+              head: [header],
+              body: rows,
+              startY: 60,
+              didDrawPage: function (data) {
+                pdf.setFont('SourceHanSans-Normal', 'normal');
+                pdf.setFontSize(12);
+                // 在表格上方添加標題和日期信息
+                if (tableTitle) {
+                  pdf.text(`${day} - ${tableTitle}`, 20, 50);
+                } else {
+                  pdf.text(day, 20, 50);
+                }
+              },
+              styles: {
+                font: 'SourceHanSans-Normal',
+                fontStyle: 'normal'
+              }
+            });
+          }
+        });
+        if (pdf.getNumberOfPages() > 1) {
+          pdf.deletePage(1);
+        }
+
+        const filename = prompt('請輸入文件名稱:', 'schedule');
+        if (filename) {
+          pdf.save(`${filename}.pdf`);
+        }
+      }
+
+      // 日期選擇器設置
+      $('#datepicker').datepicker({
+        format: 'yyyy-mm-dd',
+        language: 'zh-TW',
+        multidate: true,
+        multidateSeparator: ',',
+        todayHighlight: true
+      });
+
+      // 生成日程表
+      document.getElementById('generateScheduleBtn').addEventListener('click', function() {
+        const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate);
+        const scheduleContainer = document.getElementById('schedule-container');
+        scheduleContainer.innerHTML = '';
+
+        selectedDates.forEach((date, index) => {
+          const dayElement = document.createElement('div');
+          dayElement.classList.add('day');
+          dayElement.innerHTML = `
+            <div class="day-info">Day ${index + 1}: ${date}</div>
+            <input type="text" class="form-control table-title-input" placeholder="輸入標題">
+            <div class="json-content dropzone">
+              <table>
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Topics</th>
+                    <th>Content</th>
+                    <th>Presenter</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="dropzone">
+                    <td>
+                      <input type="text" value="09:00" class="form-control" title="From Time" placeholder="HH:MM" onkeypress="setTime(event)">
+                    </td>
+                    <td></td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+          scheduleContainer.appendChild(dayElement);
+        });
+
+        // 将所有dropzone设置为可拖放
+        document.querySelectorAll('.dropzone').forEach(dropzone => {
+          dropzone.addEventListener('dragover', allowDrop);
+          dropzone.addEventListener('drop', drop);
+        });
+      });
+
+      // 加载标题
+      fetch('../database/titles.json')
+        .then(response => response.json())
+        .then(titles => {
+          const titleSelect = document.getElementById('titleSelect');
+          titles.forEach(title => {
+            const option = document.createElement('option');
+            option.value = title;
+            option.text = title;
+            titleSelect.add(option);
+          });
+        })
+        .catch(error => console.error('Error fetching titles:', error));
+
+      // 显示课程详细信息
+      document.getElementById('titleSelect').addEventListener('change', function() {
+        const selectedTitle = this.value;
+        const courseDetailsContainer = document.getElementById('courseDetails');
+
+        if (selectedTitle) {
+          courseDetailsContainer.style.display = 'block';
+          fetch('../database/courses.json')
+            .then(response => response.json())
+            .then(courses => {
+              courseDetailsContainer.innerHTML = '';
+              const relatedCourses = courses.filter(course => course.title === selectedTitle);
+              if (relatedCourses.length > 0) {
+                relatedCourses.forEach(course => {
+                  const courseElement = document.createElement('div');
+                  courseElement.classList.add('course-detail', 'draggable');
+                  courseElement.draggable = true;
+                  courseElement.dataset.course = JSON.stringify(course);
+                  courseElement.innerHTML = `
+                    <h5>${course.title}</h5>
+                    <p><strong>Topic:</strong> ${course.topic}</p>
+                    <p><strong>Content:</strong> ${course.content.replace(/\n/g, '<br>')}</p>
+                    <p><strong>Duration:</strong> ${course.duration} minutes</p>
+                    <p><strong>Presenters:</strong> ${course.presenter.join(', ')}</p>
+                  `;
+                  courseDetailsContainer.appendChild(courseElement);
+                });
+              } else {
+                courseDetailsContainer.innerHTML = '<p>No courses found for this title.</p>';
+              }
+            })
+            .catch(error => console.error('Error fetching courses:', error));
+        } else {
+          courseDetailsContainer.style.display = 'none';
+          courseDetailsContainer.innerHTML = '';
+        }
+      });
+
+      // 格式化日期
+      function formatDate(date) {
+        const d = new Date(date);
+        const month = '' + (d.getMonth() + 1);
+        const day = '' + d.getDate();
+        const year = d.getFullYear();
+
+        return [year, (month.length < 2 ? '0' : '') + month, (day.length < 2 ? '0' : '') + day].join('-');
+      }
+
+      // 拖放功能
+      function allowDrop(event) {
+        event.preventDefault();
+      }
+
+      function drag(event) {
+        event.dataTransfer.setData("text", event.target.dataset.course);
+      }
+
+      function drop(event) {
+        event.preventDefault();
+        const courseData = event.dataTransfer.getData("text");
+        if (courseData) {
+          const course = JSON.parse(courseData);
+          const dropzone = event.target.closest('.dropzone');
+          if (!dropzone) return; // 若未找到 dropzone 直接返回
+
+          const fromTimeInput = dropzone.querySelector('td input');
+          if (!fromTimeInput) return; // 若未找到 input 直接返回
+
+          const fromTime = fromTimeInput.value;
+          const fromTimeMinutes = convertTimeToMinutes(fromTime);
+          const toTimeMinutes = fromTimeMinutes + parseInt(course.duration);
+          const toTime = convertMinutesToTime(toTimeMinutes);
+
+          dropzone.innerHTML = `
+            <td>${fromTime}</td>
+            <td>${toTime}</td>
+            <td>${course.topic}</td>
+            <td>${course.content.replace(/\n/g, '<br>')}</td>
+            <td>${course.presenter.join(', ')}</td>
+          `;
+
+          // 增加一个新的 dropzone
+          const newDropzone = document.createElement('tr');
+          newDropzone.classList.add('dropzone');
+          newDropzone.innerHTML = `
+            <td>
+              <input type="text" value="${toTime}" class="form-control" title="From Time" placeholder="HH:MM" onkeypress="setTime(event)">
+            </td>
+            <td></td>
+            <td colspan="3"></td>
+          `;
+          newDropzone.addEventListener('dragover', allowDrop);
+          newDropzone.addEventListener('drop', drop);
+          dropzone.parentNode.appendChild(newDropzone);
+        }
+      }
+
+      // 时间转换函数
+      function convertTimeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+      }
+
+      function convertMinutesToTime(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+      }
+
+      // 绑定点击事件
+      document.getElementById('downloadPdfBtn').addEventListener('click', downloadPdf);
+
+      // 动态加载菜单栏
+      fetch('menu.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('menu-bar').innerHTML = data;
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    });
+
+    // 动态绑定 dragstart 事件
+    document.addEventListener('dragstart', function(event) {
+      if (event.target.classList.contains('draggable')) {
+        event.dataTransfer.setData("text", event.target.dataset.course);
+      }
+    });
+
+    // 动态处理 setTime 事件
+    window.setTime = function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const time = input.value;
+        const dropzone = input.closest('.dropzone');
+        if (dropzone) {
+          dropzone.querySelector('td').innerText = time;
+          input.remove();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
