@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       presenter: presenters // Array of selected presenters
     };
 
-    fetch('/save', { // Replace with your API endpoint
+    fetch('/add-course', { // Replace with your API endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
