@@ -98,27 +98,31 @@
       const duration = document.getElementById('duration').value;
       const presenters = Array.from(document.querySelectorAll('#presenterList input:checked')).map(input => input.value);
 
-      fetch('/add-course', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, topic, content, duration, presenters }),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.text();
-      })
-      .then(data => {
-        // alert('Course added successfully: ' + data);
-        window.location.href = 'all-courses.html';
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to add course. Please try again.');
-      });
+      // 获取现有课程并追加新课程
+      fetch('../database/courses.json')
+        .then(response => response.json())
+        .then(data => {
+          const newCourse = { title, topic, content, duration, presenters };
+          data.push(newCourse); // 添加新课程
+          return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // alert('Course added successfully.');
+          window.location.href = 'all-courses.html';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to add course. Please try again.');
+        });
     });
 
     // 清除按钮
