@@ -3,24 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Information</title>
+  <title>使用教學 - ReadMe</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .content {
+      margin: 20px;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-  <div id="menu-bar"></div>
+  <div class="container">
+    <h1 class="mt-4 mb-4">使用教學</h1>
 
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Planner</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="planner.html" class="btn btn-primary">前往 Planner</a>
+          </p>
+          <p>
+            根據使用者所選擇的時間生成日程表格，並且可以從右方區塊拖拉課程進去表格內。
+            右邊區塊可以使用選擇標題來篩選相關的課程。
+            最後可以匯出這幾天日程表格的 PDF 檔案。
+            每天可以輸入相關的標題或者不輸入。
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Courses</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="all-courses.html" class="btn btn-primary">前往 Courses</a>
+          </p>
+          <p>
+            顯示所有的課程，並且可以使用篩選器來過濾出相關課程。
+            裡面有一個 "Add New Course" 的按鈕。
+          </p>
+        </div>
+      </div>
+
+      <!-- <div class="card">
+        <div class="card-header">
+          <h2>Add New Course</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="add-course.html" class="btn btn-primary">前往 Add New Course</a>
+          </p>
+          <p>
+            可以新增課程，包含以下欄位：
+            <ul>
+              <li>Course Title (下拉列表)</li>
+              <li>Topic (手動輸入)</li>
+              <li>Content (手動輸入)</li>
+              <li>Duration (手動輸入)</li>
+              <li>Presenters (可以勾選多個的表)</li>
+            </ul>
+          </p>
+        </div>
+      </div> -->
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Titles</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="all-titles.html" class="btn btn-primary">前往 Titles</a>
+          </p>
+          <p>
+            顯示所有的課程標題，每個標題都可以修改或刪除。
+            並且有一個 "Add New Course Title" 的按鈕。
+          </p>
+        </div>
+      </div>
+
+      <!-- <div class="card">
+        <div class="card-header">
+          <h2>Add New Course Title</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="add-title.html" class="btn btn-primary">前往 Add New Course Title</a>
+          </p>
+          <p>
+            裡面有一個文字框可以輸入 Course Title。
+          </p>
+        </div>
+      </div> -->
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Presenters</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="all-presenters.html" class="btn btn-primary">前往 Presenters</a>
+          </p>
+          <p>
+            顯示所有的講師，每個講師都可以修改或刪除。
+            並且有一個 "Add New Presenter" 的按鈕。
+          </p>
+        </div>
+      </div>
+
+      <!-- <div class="card">
+        <div class="card-header">
+          <h2>Add New Presenter</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            <a href="add-presenter.html" class="btn btn-primary">前往 Add New Presenter</a>
+          </p>
+          <p>
+            裡面有一個文字框可以輸入 Presenter Name。
+          </p>
+        </div>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- 引入腳本 -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-    // JavaScript to dynamically load menu bar
-    fetch('menu.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('menu-bar').innerHTML = data;
-      })
-      .catch(error => console.error('Error loading menu:', error));
-
-  </script>
 </body>
 </html>
+
