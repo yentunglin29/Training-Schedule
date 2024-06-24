@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display All Courses</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .container {
+      margin-top: 20px;
+    }
+    .course-item {
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
   <div id="menu-bar"></div>
@@ -24,11 +32,17 @@
     </div>
 
     <ul id="courseList" class="list-group"></ul>
+
+    <div class="mt-3">
+      <button class="btn btn-secondary" id="clearButton">Clear Filters</button>
+      <button class="btn btn-secondary" id="backButton">Go Back</button>
+    </div>
   </div>
 
   <script>
     let courses = []; // 保存所有課程數據
     let originalIndexes = []; // 保存課程的原始索引
+    let selectedTitle = ''; // 保存当前的筛选条件
 
     // 從 JSON 中加載課程
     fetch('../database/courses.json')
@@ -44,6 +58,7 @@
     // 填充標題過濾器
     function populateTitleFilter() {
       const titleFilter = document.getElementById('titleFilter');
+      titleFilter.innerHTML = '<option value="">All Titles</option>'; // 清空已有内容
       const titles = [...new Set(courses.map(course => course.title))];
       titles.forEach(title => {
         const option = document.createElement('option');
@@ -65,12 +80,13 @@
             <div>
               <strong>Title:</strong> ${course.title}<br>
               <strong>Topic:</strong> ${course.topic}<br>
-              <strong>Content:</strong> ${course.content ? course.content.replace(/\n/g, '<br>') : 'N/A'}<br>              <strong>Duration:</strong> ${course.duration} mins<br>
+              <strong>Content:</strong> ${course.content ? course.content.replace(/\n/g, '<br>') : 'N/A'}<br>
+              <strong>Duration:</strong> ${course.duration} mins<br>
               <strong>Presenter:</strong> ${Array.isArray(course.presenter) ? course.presenter.join(', ') : 'N/A'}
             </div>
             <div>
               <button class="btn btn-sm btn-warning" onclick="editCourse(${originalIndexes[index]})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${originalIndexes[index]})">Delete</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
             </div>
           </div>
         `;
@@ -80,13 +96,26 @@
 
     // 過濾課程
     document.getElementById('titleFilter').addEventListener('change', function() {
-      const selectedTitle = this.value;
+      selectedTitle = this.value;
       const filteredCourses = selectedTitle
         ? courses.filter(course => course.title === selectedTitle)
         : courses; // 顯示所有課程或過濾後的課程
 
       originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
       displayCourses(filteredCourses);
+    });
+
+    // 清除過濾器
+    document.getElementById('clearButton').addEventListener('click', function() {
+      document.getElementById('titleFilter').value = '';
+      selectedTitle = '';
+      displayCourses(courses);
+      originalIndexes = courses.map((_, index) => index); // 重置原始索引
+    });
+
+    // 返回上一頁
+    document.getElementById('backButton').addEventListener('click', function() {
+      window.history.back();
     });
 
     // 跳轉到編輯頁面
@@ -98,26 +127,42 @@
 
     // 刪除課程
     function deleteCourse(index) {
-      fetch('../database/courses.json')
-        .then(response => response.json())
-        .then(data => {
-          data.splice(index, 1); // 移除課程
-          return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-          });
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          // 重新加載頁面或更新 UI
-          window.location.reload();
-        })
-        .catch(error => console.error('Error:', error));
+      const filteredCourses = selectedTitle
+        ? courses.filter(course => course.title === selectedTitle)
+        : courses;
+      const courseIndex = filteredCourses[index] ? courses.indexOf(filteredCourses[index]) : -1;
+
+      if (courseIndex > -1) {
+        // 从 courses.json 中删除
+        fetch('../database/courses.json')
+          .then(response => response.json())
+          .then(data => {
+            data.splice(courseIndex, 1); // 移除课程
+            return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return data; // 返回更新后的数据
+            });
+          })
+          .then(updatedData => {
+            courses = updatedData; // 更新全局變量
+            // 更新当前过滤后的列表
+            const newFilteredCourses = selectedTitle
+              ? courses.filter(course => course.title === selectedTitle)
+              : courses;
+            originalIndexes = newFilteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
+            displayCourses(newFilteredCourses);
+          })
+          .catch(error => console.error('Error:', error));
+      }
     }
   </script>
 
