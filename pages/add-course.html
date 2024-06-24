@@ -111,10 +111,10 @@
         }
         return response.text();
       })
-      // .then(data => {
-      //   alert('Course added successfully: ' + data);
-      //   window.location.href = 'all-courses.html';
-      // })
+      .then(data => {
+        // alert('Course added successfully: ' + data);
+        window.location.href = 'all-courses.html';
+      })
       .catch(error => {
         console.error('Error:', error);
         alert('Failed to add course. Please try again.');
