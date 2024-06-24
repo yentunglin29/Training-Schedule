@@ -17,6 +17,8 @@
         <input type="text" class="form-control" id="courseTitle" name="courseTitle" required>
       </div>
       <button type="submit" class="btn btn-primary">Add Title</button>
+      <button type="button" class="btn btn-secondary" id="clearButton">Clear</button>
+      <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
   </div>
 
@@ -41,12 +43,20 @@
       })
       .then(data => {
         alert('Title added successfully: ' + data);
-        window.location.href = '/pages/all-titles.html'; // Redirect to main page
+        window.location.href = 'all-titles.html';
       })
       .catch(error => {
         console.error('Error:', error);
         alert('Failed to add title. Please try again.');
       });
+    });
+
+    document.getElementById('clearButton').addEventListener('click', function() {
+      document.getElementById('addCourseForm').reset();
+    });
+
+    document.getElementById('backButton').addEventListener('click', function() {
+      window.history.back();
     });
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
