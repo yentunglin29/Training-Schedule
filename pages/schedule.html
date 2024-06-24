@@ -60,7 +60,7 @@
         const pdf = new jsPDF('p', 'pt', 'a4');
         pdf.addFont('SourceHanSans-Normal.ttf', 'SourceHanSans-Normal', 'normal');
         pdf.setFont('SourceHanSans-Normal');
-        pdf.text(20, 20, 'Orientation Schedule');
+        // pdf.text(20, 20, 'Orientation Schedule');
 
         const tables = document.querySelectorAll('#schedule-container .day');
         tables.forEach((dayElement, index) => {
@@ -73,27 +73,30 @@
             });
             const header = rows.shift();
 
+            // 確保每個表格單獨一頁
+            pdf.addPage();
+
             pdf.autoTable({
               head: [header],
               body: rows,
-              startY: pdf.autoTable.previous ? pdf.autoTable.previous.finalY + 30 : 60,
+              startY: 60, // 表格從新頁面的頂部開始
               // 在表格上方添加標題和日期信息
               didDrawPage: function (data) {
                 pdf.setFont('SourceHanSans-Normal', 'normal');
                 pdf.setFontSize(12);
-                pdf.text(`${day}${tableTitle ? ` - ${tableTitle}` : ''}`, 20, data.settings.startY - 10);
+                pdf.text(`${day}${tableTitle ? ` - ${tableTitle}` : ''}`, 20, 50);
               },
               styles: {
                 font: 'SourceHanSans-Normal',
                 fontStyle: 'normal'
               }
             });
-
-            if (index < tables.length - 1) {
-              pdf.addPage();
-            }
           }
         });
+        // 移除第一頁（它是空的）
+        if (pdf.getNumberOfPages() > 1) {
+          pdf.deletePage(1);
+        }
 
         const filename = prompt('請輸入文件名稱:', 'schedule');
         if (filename) {
