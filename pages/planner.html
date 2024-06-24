@@ -175,7 +175,7 @@
           dayElement.innerHTML = `
             <div class="day-info">Day ${index + 1}: ${date}</div>
             <input type="text" class="form-control table-title-input" placeholder="輸入標題">
-            <div class="json-content dropzone">
+            <div class="json-content">
               <table>
                 <thead>
                   <tr>
@@ -201,7 +201,7 @@
           scheduleContainer.appendChild(dayElement);
         });
 
-        // 将所有dropzone设置为可拖放
+        // 将表格行中的所有dropzone设置为可拖放
         document.querySelectorAll('.dropzone').forEach(dropzone => {
           dropzone.addEventListener('dragover', allowDrop);
           dropzone.addEventListener('drop', drop);
