@@ -26,6 +26,7 @@
     .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; }
     #courseDetails { max-height: 500px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
     .download-btn { margin-top: 20px; }
+    .table-title { margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -86,6 +87,7 @@
         const tables = document.querySelectorAll('#schedule-container .day');
         tables.forEach((dayElement, index) => {
           const day = dayElement.querySelector('.day-info').innerText;
+          const tableTitle = dayElement.querySelector('.table-title-input').value;
           const table = dayElement.querySelector('.json-content table');
           if (table) {
             const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
@@ -101,7 +103,12 @@
               didDrawPage: function (data) {
                 pdf.setFont('SourceHanSans-Normal', 'normal');
                 pdf.setFontSize(12);
-                pdf.text(day, 20, 50);
+                // 在表格上方添加標題和日期信息
+                if (tableTitle) {
+                  pdf.text(`${day} - ${tableTitle}`, 20, 50);
+                } else {
+                  pdf.text(day, 20, 50);
+                }
               },
               styles: {
                 font: 'SourceHanSans-Normal',
@@ -140,6 +147,7 @@
           dayElement.classList.add('day');
           dayElement.innerHTML = `
             <div class="day-info">Day ${index + 1}: ${date}</div>
+            <input type="text" class="form-control table-title-input" placeholder="輸入標題">
             <div class="json-content dropzone">
               <table>
                 <thead>
@@ -238,6 +246,10 @@
       // 拖放功能
       function allowDrop(event) {
         event.preventDefault();
+      }
+
+      function drag(event) {
+        event.dataTransfer.setData("text", event.target.dataset.course);
       }
 
       function drop(event) {
