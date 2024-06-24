@@ -82,11 +82,11 @@
               <strong>Topic:</strong> ${course.topic}<br>
               <strong>Content:</strong> ${course.content ? course.content.replace(/\n/g, '<br>') : 'N/A'}<br>
               <strong>Duration:</strong> ${course.duration} mins<br>
-              <strong>Presenter:</strong> ${course.presenter.join(', ')}
+              <strong>Presenter:</strong> ${Array.isArray(course.presenter) ? course.presenter.join(', ') : 'N/A'}
             </div>
             <div>
               <button class="btn btn-sm btn-warning" onclick="editCourse(${originalIndexes[index]})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${originalIndexes[index]})">Delete</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
             </div>
           </div>
         `;
@@ -127,32 +127,48 @@
 
     // 刪除課程
     function deleteCourse(index) {
-      fetch('../database/courses.json')
-        .then(response => response.json())
-        .then(data => {
-          data.splice(index, 1); // 移除課程
-          return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-          });
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          // 重新加載頁面或更新 UI
-          window.location.reload();
-        })
-        .catch(error => console.error('Error:', error));
+      const filteredCourses = selectedTitle
+        ? courses.filter(course => course.title === selectedTitle)
+        : courses;
+      const courseIndex = filteredCourses[index] ? courses.indexOf(filteredCourses[index]) : -1;
+
+      if (courseIndex > -1) {
+        // 从 courses.json 中删除
+        fetch('../database/courses.json')
+          .then(response => response.json())
+          .then(data => {
+            data.splice(courseIndex, 1); // 移除课程
+            return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return data; // 返回更新后的数据
+            });
+          })
+          .then(updatedData => {
+            courses = updatedData; // 更新全局變量
+            // 更新当前过滤后的列表
+            const newFilteredCourses = selectedTitle
+              ? courses.filter(course => course.title === selectedTitle)
+              : courses;
+            originalIndexes = newFilteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
+            displayCourses(newFilteredCourses);
+          })
+          .catch(error => console.error('Error:', error));
+      }
     }
   </script>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://stackpath.herokuapp.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
     // 動態加載選單
     fetch('menu.html')
