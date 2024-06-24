@@ -9,19 +9,11 @@
   <style>
     .content {
       display: flex;
-      position: relative;
+      flex-wrap: wrap;
     }
-    .content-main {
-      flex: 2;
-      padding-right: 320px; /* To ensure the right sidebar is not overlapped */
-    }
-    .content-sidebar {
-      width: 300px;
-      position: sticky;
-      top: 20px;
-      height: 100vh;
-      overflow-y: auto;
-      margin-left: -320px; /* Move sidebar to the left by its width plus padding */
+    .content-main, .content-sidebar {
+      flex: 1;
+      padding: 10px;
     }
     .day { margin: 10px 0; font-size: 18px; }
     .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
@@ -32,6 +24,32 @@
     .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; }
     .download-btn { margin-top: 20px; }
     .table-title { margin-bottom: 10px; }
+    .selection-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .selection-section > div {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .selection-section > div:last-child {
+      margin-right: 0;
+    }
+    .selection-section .form-group {
+      margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+      .content-main, .content-sidebar {
+        flex: 100%;
+        max-width: 100%;
+      }
+      .selection-section > div {
+        flex: 100%;
+        margin-right: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -40,12 +58,22 @@
   <div class="container mt-4">
     <h1>Planner</h1>
 
-    <!-- date picker -->
-    <div class="form-group">
-      <label for="datepicker">選擇日期:</label>
-      <input type="text" id="datepicker" class="form-control" placeholder="選擇日期範圍">
+    <!-- 選擇部分 -->
+    <div class="selection-section">
+      <!-- 日期選擇器 -->
+      <div class="form-group">
+        <label for="datepicker">選擇日期:</label>
+        <input type="text" id="datepicker" class="form-control" placeholder="選擇日期範圍">
+        <button id="generateScheduleBtn" class="btn btn-primary mt-2">生成日程表</button>
+      </div>
+      <!-- 標題選擇器 -->
+      <div class="form-group">
+        <label for="titleSelect">選擇標題:</label>
+        <select id="titleSelect" class="form-control">
+          <option value="">選擇標題</option>
+        </select>
+      </div>
     </div>
-    <button id="generateScheduleBtn" class="btn btn-primary">生成日程表</button>
 
     <div class="content">
       <div class="content-main">
@@ -58,12 +86,6 @@
 
       <!-- 右側課程詳細信息 -->
       <div class="content-sidebar">
-        <div class="form-group">
-          <label for="titleSelect">選擇標題:</label>
-          <select id="titleSelect" class="form-control">
-            <option value="">選擇標題</option>
-          </select>
-        </div>
         <div id="courseDetails"></div>
       </div>
     </div>
@@ -143,7 +165,7 @@
 
       // 生成日程表
       document.getElementById('generateScheduleBtn').addEventListener('click', function() {
-        const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate);
+        const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate).sort();
         const scheduleContainer = document.getElementById('schedule-container');
         scheduleContainer.innerHTML = '';
 
