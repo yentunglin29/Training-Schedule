@@ -11,6 +11,7 @@
     .import-btn { margin-left: 10px; }
     .file-input { display: none; }
     .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
+    .table-title { margin: 10px 0; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     th, td { border: 1px solid #dddddd; text-align: center; padding: 8px; }
     th { background-color: #f2f2f2; }
@@ -61,26 +62,35 @@
         pdf.setFont('SourceHanSans-Normal');
         pdf.text(20, 20, '繁體中文日程表');
 
-        const tables = document.querySelectorAll('#schedule-container .json-content table');
-        tables.forEach((table, index) => {
-          const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
-            return Array.from(tr.querySelectorAll('td, th')).map(td => td.innerText);
-          });
-          const header = rows.shift();
-          
-          pdf.autoTable({
-            head: [header],
-            body: rows,
-            startY: index === 0 ? 60 : pdf.autoTable.previous.finalY + 10,
-            // 確保表格使用自定義字體
-            styles: {
-              font: 'SourceHanSans-Normal',
-              fontStyle: 'normal'
-            }
-          });
+        const tables = document.querySelectorAll('#schedule-container .day');
+        tables.forEach((dayElement, index) => {
+          const day = dayElement.querySelector('.day-info').innerText;
+          const tableTitle = dayElement.querySelector('.table-title-input').value || '無標題';
+          const table = dayElement.querySelector('.json-content table');
+          if (table) {
+            const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
+              return Array.from(tr.querySelectorAll('td, th')).map(td => td.innerText);
+            });
+            const header = rows.shift();
 
-          if (index > 0) {
-            pdf.addPage();
+            pdf.autoTable({
+              head: [header],
+              body: rows,
+              startY: pdf.autoTable.previous ? pdf.autoTable.previous.finalY + 30 : 60,
+              didDrawPage: function (data) {
+                pdf.setFont('SourceHanSans-Normal', 'normal');
+                pdf.setFontSize(12);
+                pdf.text(`${day} - ${tableTitle}`, 20, data.settings.startY - 10);
+              },
+              styles: {
+                font: 'SourceHanSans-Normal',
+                fontStyle: 'normal'
+              }
+            });
+
+            if (index < tables.length - 1) {
+              pdf.addPage();
+            }
           }
         });
 
@@ -112,7 +122,8 @@
           const dayElement = document.createElement('div');
           dayElement.classList.add('day');
           dayElement.innerHTML = `
-            <span>Day ${index + 1}: ${date}</span>
+            <div class="day-info">Day ${index + 1}: ${date}</div>
+            <input type="text" class="form-control table-title-input" placeholder="輸入標題">
             <button class="btn btn-secondary import-btn">+</button>
             <input type="file" class="file-input" accept=".json">
             <div class="json-content"></div>
