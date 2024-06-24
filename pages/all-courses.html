@@ -65,8 +65,7 @@
             <div>
               <strong>Title:</strong> ${course.title}<br>
               <strong>Topic:</strong> ${course.topic}<br>
-              <strong>Content:</strong> ${course.content.replace(/\n/g, '<br>')}<br>
-              <strong>Duration:</strong> ${course.duration} mins<br>
+              <strong>Content:</strong> ${course.content ? course.content.replace(/\n/g, '<br>') : 'N/A'}<br>              <strong>Duration:</strong> ${course.duration} mins<br>
               <strong>Presenter:</strong> ${course.presenter.join(', ')}
             </div>
             <div>
