@@ -11,9 +11,27 @@
       display: flex;
       flex-wrap: wrap;
     }
-    .content-main, .content-sidebar {
+    .content-main {
       flex: 1;
-      padding: 10px;
+      padding-right: 10px;
+      /* 为了保持两边均匀，去掉固定的右边间距 */
+      max-width: 50%;
+    }
+    .content-sidebar {
+      width: 50%;
+      max-width: 50%;
+      position: sticky; /* 设置粘性定位 */
+      top: 20px; /* 与页面顶部的距离 */
+      max-height: calc(100vh - 40px); /* 保持侧边栏在视图内 */
+      overflow-y: auto; /* 允许滚动 */
+      padding-left: 10px; /* 内边距 */
+      background-color: #f8f9fa; /* 背景颜色 */
+      border-left: 1px solid #ddd; /* 分隔线 */
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+      display: none; /* 初始时隐藏 */
+    }
+    .content-sidebar.active {
+      display: block; /* 激活时显示 */
     }
     .day { margin: 10px 0; font-size: 18px; }
     .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
@@ -26,7 +44,6 @@
     .table-title { margin-bottom: 10px; }
     .selection-section {
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       margin-bottom: 20px;
     }
@@ -40,10 +57,31 @@
     .selection-section .form-group {
       margin-bottom: 20px;
     }
+    .course-detail {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+    .course-detail h5 {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .course-detail p {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    .course-divider {
+      border-top: 1px solid #ddd;
+      margin: 10px 0;
+    }
     @media (max-width: 768px) {
-      .content-main, .content-sidebar {
+      .content-main,
+      .content-sidebar {
         flex: 100%;
         max-width: 100%;
+        padding-right: 0;
       }
       .selection-section > div {
         flex: 100%;
@@ -85,7 +123,7 @@
       </div>
 
       <!-- 右側課程詳細信息 -->
-      <div class="content-sidebar">
+      <div class="content-sidebar" id="courseDetailsContainer">
         <div id="courseDetails"></div>
       </div>
     </div>
@@ -225,14 +263,15 @@
       // 显示课程详细信息
       document.getElementById('titleSelect').addEventListener('change', function() {
         const selectedTitle = this.value;
-        const courseDetailsContainer = document.getElementById('courseDetails');
+        const courseDetailsContainer = document.getElementById('courseDetailsContainer');
+        const courseDetails = document.getElementById('courseDetails');
+        courseDetails.innerHTML = '';
 
         if (selectedTitle) {
-          courseDetailsContainer.style.display = 'block';
+          courseDetailsContainer.classList.add('active');
           fetch('../database/courses.json')
             .then(response => response.json())
             .then(courses => {
-              courseDetailsContainer.innerHTML = '';
               const relatedCourses = courses.filter(course => course.title === selectedTitle);
               if (relatedCourses.length > 0) {
                 relatedCourses.forEach(course => {
@@ -247,16 +286,20 @@
                     <p><strong>Duration:</strong> ${course.duration} minutes</p>
                     <p><strong>Presenters:</strong> ${course.presenter.join(', ')}</p>
                   `;
-                  courseDetailsContainer.appendChild(courseElement);
+                  courseDetails.appendChild(courseElement);
+                  
+                  // 添加分隔线条
+                  const divider = document.createElement('hr');
+                  divider.classList.add('course-divider');
+                  courseDetails.appendChild(divider);
                 });
               } else {
-                courseDetailsContainer.innerHTML = '<p>No courses found for this title.</p>';
+                courseDetails.innerHTML = '<p>No courses found for this title.</p>';
               }
             })
             .catch(error => console.error('Error fetching courses:', error));
         } else {
-          courseDetailsContainer.style.display = 'none';
-          courseDetailsContainer.innerHTML = '';
+          courseDetailsContainer.classList.remove('active');
         }
       });
 
