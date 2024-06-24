@@ -24,7 +24,7 @@
       </div>
       <div class="form-group">
         <label for="content">Content:</label>
-        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+        <textarea class="form-control" id="content" name="content" rows="4"></textarea>
       </div>
       <div class="form-group">
         <label for="duration">Duration (min):</label>
@@ -111,10 +111,10 @@
         }
         return response.text();
       })
-      .then(data => {
-        alert('Course added successfully: ' + data);
-        window.location.href = 'all-courses.html';
-      })
+      // .then(data => {
+      //   alert('Course added successfully: ' + data);
+      //   window.location.href = 'all-courses.html';
+      // })
       .catch(error => {
         console.error('Error:', error);
         alert('Failed to add course. Please try again.');
