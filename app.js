@@ -64,7 +64,7 @@ app.get('/presenters', async (req, res) => {
 });
 
 // add new course title
-app.post('/add-course', async (req, res) => {
+app.post('/add-title', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
     titles.push(req.body.title);
@@ -88,7 +88,7 @@ app.post('/add-presenter', async (req, res) => {
 });
 
 // save course info
-app.post('/save', async (req, res) => {
+app.post('/add-course', async (req, res) => {
   try {
     const courses = await readJSONFile('database/courses.json');
     courses.push(req.body);
