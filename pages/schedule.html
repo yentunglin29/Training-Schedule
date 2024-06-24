@@ -60,12 +60,12 @@
         const pdf = new jsPDF('p', 'pt', 'a4');
         pdf.addFont('SourceHanSans-Normal.ttf', 'SourceHanSans-Normal', 'normal');
         pdf.setFont('SourceHanSans-Normal');
-        pdf.text(20, 20, '繁體中文日程表');
+        pdf.text(20, 20, 'Orientation Schedule');
 
         const tables = document.querySelectorAll('#schedule-container .day');
         tables.forEach((dayElement, index) => {
           const day = dayElement.querySelector('.day-info').innerText;
-          const tableTitle = dayElement.querySelector('.table-title-input').value || '無標題';
+          const tableTitle = dayElement.querySelector('.table-title-input').value;
           const table = dayElement.querySelector('.json-content table');
           if (table) {
             const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
@@ -77,10 +77,11 @@
               head: [header],
               body: rows,
               startY: pdf.autoTable.previous ? pdf.autoTable.previous.finalY + 30 : 60,
+              // 在表格上方添加標題和日期信息
               didDrawPage: function (data) {
                 pdf.setFont('SourceHanSans-Normal', 'normal');
                 pdf.setFontSize(12);
-                pdf.text(`${day} - ${tableTitle}`, 20, data.settings.startY - 10);
+                pdf.text(`${day}${tableTitle ? ` - ${tableTitle}` : ''}`, 20, data.settings.startY - 10);
               },
               styles: {
                 font: 'SourceHanSans-Normal',
