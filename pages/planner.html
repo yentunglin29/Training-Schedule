@@ -9,13 +9,19 @@
   <style>
     .content {
       display: flex;
+      position: relative;
     }
     .content-main {
       flex: 2;
+      padding-right: 320px; /* To ensure the right sidebar is not overlapped */
     }
     .content-sidebar {
       width: 300px;
-      margin-left: 20px;
+      position: sticky;
+      top: 20px;
+      height: 100vh;
+      overflow-y: auto;
+      margin-left: -320px; /* Move sidebar to the left by its width plus padding */
     }
     .day { margin: 10px 0; font-size: 18px; }
     .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
@@ -24,7 +30,6 @@
     th { background-color: #f2f2f2; }
     .draggable { cursor: grab; }
     .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; }
-    #courseDetails { max-height: 500px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
     .download-btn { margin-top: 20px; }
     .table-title { margin-bottom: 10px; }
   </style>
