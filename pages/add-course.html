@@ -36,6 +36,8 @@
         <div id="presenterList"></div>
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="button" class="btn btn-secondary" id="clearButton">Clear</button>
+      <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
   </div>
 
@@ -44,7 +46,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="../script.js"></script>
   <script>
-    // JavaScript to dynamically load menu bar
+    // 动态加载菜单栏
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
@@ -52,7 +54,7 @@
       })
       .catch(error => console.error('Error loading menu:', error));
 
-    // Fetch presenters and populate checkboxes
+    // 获取讲师并填充复选框
     fetch('../database/presenters.json')
       .then(response => {
         if (!response.ok) {
@@ -62,7 +64,7 @@
       })
       .then(presenters => {
         const presenterList = document.getElementById('presenterList');
-        presenterList.innerHTML = ''; // Clear any existing content
+        presenterList.innerHTML = ''; // 清空已有内容
         presenters.forEach(presenter => {
           const checkboxWrapper = document.createElement('div');
           checkboxWrapper.className = 'form-check';
@@ -85,6 +87,49 @@
         });
       })
       .catch(error => console.error('Error fetching presenters:', error));
+
+    // 表单提交
+    document.getElementById('courseForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const topic = document.getElementById('topic').value;
+      const content = document.getElementById('content').value;
+      const duration = document.getElementById('duration').value;
+      const presenters = Array.from(document.querySelectorAll('#presenterList input:checked')).map(input => input.value);
+
+      fetch('/add-course', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, topic, content, duration, presenters }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
+      .then(data => {
+        alert('Course added successfully: ' + data);
+        window.location.href = 'all-courses.html';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add course. Please try again.');
+      });
+    });
+
+    // 清除按钮
+    document.getElementById('clearButton').addEventListener('click', function() {
+      document.getElementById('courseForm').reset();
+    });
+
+    // 返回按钮
+    document.getElementById('backButton').addEventListener('click', function() {
+      window.history.back();
+    });
   </script>
 </body>
 </html>
