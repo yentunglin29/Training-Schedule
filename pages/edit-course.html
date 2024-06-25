@@ -41,13 +41,14 @@
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
 
-      let course; // 變量來保存當前課程數據
+      let course; // Variable to store current course data
 
-      // 從 JSON 文件中加載講者列表
+      // Fetch presenter list from JSON file
       fetch('../database/presenters.json')
         .then(response => response.json())
         .then(presenters => {
           const presenterList = document.getElementById('presenterList');
+          presenterList.innerHTML = ''; // Clear existing content
           presenters.forEach(presenter => {
             const checkboxWrapper = document.createElement('div');
             checkboxWrapper.className = 'form-check';
@@ -69,24 +70,31 @@
             presenterList.appendChild(checkboxWrapper);
           });
 
-          // 加載當前課程數據並設置表單值
+          // Fetch course data and set form values
           return fetch('../database/courses.json');
         })
         .then(response => response.json())
         .then(data => {
-          course = data[index];
-          document.getElementById('courseTitle').value = course.title;
-          document.getElementById('courseTopic').value = course.topic;
-          document.getElementById('courseContent').value = course.content;
-          document.getElementById('courseDuration').value = course.duration;
+          if (data[index]) {
+            course = data[index];
+            document.getElementById('courseTitle').value = course.title;
+            document.getElementById('courseTopic').value = course.topic;
+            document.getElementById('courseContent').value = course.content;
+            document.getElementById('courseDuration').value = course.duration;
 
-          // 設置已選中的講者
-          course.presenter.forEach(p => {
-            const checkbox = document.getElementById(`presenter-${p}`);
-            if (checkbox) {
-              checkbox.checked = true;
+            // Set selected presenters
+            if (course.presenter && Array.isArray(course.presenter)) {
+              course.presenter.forEach(p => {
+                const checkbox = document.getElementById(`presenter-${p}`);
+                if (checkbox) {
+                  checkbox.checked = true;
+                }
+              });
             }
-          });
+          } else {
+            console.error('Invalid course index:', index);
+            alert('Invalid course index. Please try again.');
+          }
         })
         .catch(error => console.error('Error:', error));
 
@@ -104,27 +112,32 @@
         fetch('../database/courses.json')
           .then(response => response.json())
           .then(data => {
-            data[index] = updatedCourse; // 更新課程數據
-            return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data),
-            });
+            if (data[index]) {
+              data[index] = updatedCourse; // Update course data
+              return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+              });
+            } else {
+              throw new Error('Invalid course index');
+            }
           })
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-            // Redirect back to the courses list
+            // Alert and redirect
+            alert('Course updated successfully!');
             window.location.href = '/pages/all-courses.html';
           })
           .catch(error => console.error('Error:', error));
       });
     });
 
-    // 動態加載選單
+    // Dynamic menu bar loading
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
