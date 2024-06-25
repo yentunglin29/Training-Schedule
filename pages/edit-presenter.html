@@ -24,39 +24,63 @@
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
-      const name = urlParams.get('name');
+      const oldName = urlParams.get('name');
 
-      document.getElementById('presenterName').value = name;
+      document.getElementById('presenterName').value = oldName;
 
       document.getElementById('editPresenterForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
         const newName = document.getElementById('presenterName').value;
 
+        // Update presenters.json
         fetch('../database/presenters.json')
           .then(response => response.json())
-          .then(data => {
-            data[index] = newName; // Update the presenter name
+          .then(presenters => {
+            presenters[index] = newName; // Update presenter name
             return fetch('http://localhost:3000/update-presenters', { // Endpoint to update presenters.json
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(data),
+              body: JSON.stringify(presenters),
             });
           })
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-            // Redirect back to the presenters list
+
+            // Update courses.json
+            return fetch('../database/courses.json')
+          })
+          .then(response => response.json())
+          .then(courses => {
+            courses.forEach(course => {
+              course.presenter = course.presenter.map(p => p === oldName ? newName : p); // Update presenter names
+            });
+
+            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(courses),
+            });
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+
+            // Alert and redirect
+            alert('Presenter name and associated courses updated successfully!');
             window.location.href = '/pages/all-presenters.html';
           })
           .catch(error => console.error('Error:', error));
       });
     });
-  </script>
-  <script>
+
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
       .then(response => response.text())
