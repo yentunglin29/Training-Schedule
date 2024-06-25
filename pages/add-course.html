@@ -39,22 +39,27 @@
       <button type="button" class="btn btn-secondary" id="clearButton">Clear</button>
       <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
+
+    <!-- Display JSON Data Section -->
+    <div id="jsonDisplay" class="mt-4" style="display: none;">
+      <h2>Submitted Course Information</h2>
+      <pre id="jsonData"></pre>
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script src="../script.js"></script>
   <script>
-    // 动态加载菜单栏
+    // Dynamic menu bar loading
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
         document.getElementById('menu-bar').innerHTML = data;
       })
       .catch(error => console.error('Error loading menu:', error));
-
-    // 获取讲师并填充复选框
+  
+    // Fetch and populate presenters
     fetch('../database/presenters.json')
       .then(response => {
         if (!response.ok) {
@@ -64,47 +69,47 @@
       })
       .then(presenters => {
         const presenterList = document.getElementById('presenterList');
-        presenterList.innerHTML = ''; // 清空已有内容
+        presenterList.innerHTML = ''; // Clear existing content
         presenters.forEach(presenter => {
           const checkboxWrapper = document.createElement('div');
           checkboxWrapper.className = 'form-check';
-
+  
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.className = 'form-check-input';
           checkbox.id = `presenter-${presenter}`;
           checkbox.value = presenter;
           checkbox.name = 'presenter';
-
+  
           const label = document.createElement('label');
           label.className = 'form-check-label';
           label.htmlFor = `presenter-${presenter}`;
           label.textContent = presenter;
-
+  
           checkboxWrapper.appendChild(checkbox);
           checkboxWrapper.appendChild(label);
           presenterList.appendChild(checkboxWrapper);
         });
       })
       .catch(error => console.error('Error fetching presenters:', error));
-
-    // 表单提交
+  
+    // Form submission handling
     document.getElementById('courseForm').addEventListener('submit', function(event) {
       event.preventDefault();
-
+  
       const title = document.getElementById('title').value;
       const topic = document.getElementById('topic').value;
       const content = document.getElementById('content').value;
       const duration = document.getElementById('duration').value;
       const presenters = Array.from(document.querySelectorAll('#presenterList input:checked')).map(input => input.value);
-
-      // 获取现有课程并追加新课程
+  
+      // Fetch current courses and add new course
       fetch('../database/courses.json')
         .then(response => response.json())
         .then(data => {
           const newCourse = { title, topic, content, duration, presenters };
-          data.push(newCourse); // 添加新课程
-          return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
+          data.push(newCourse); // Add new course
+          return fetch('/update-courses', { // Endpoint to update courses.json
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -116,24 +121,57 @@
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          // alert('Course added successfully.');
-          window.location.href = 'all-courses.html';
+
+          // Show JSON data after successful submission
+          document.getElementById('jsonDisplay').style.display = 'block';
+          document.getElementById('jsonData').textContent = JSON.stringify({
+            title,
+            topic,
+            content,
+            duration,
+            presenters
+          }, null, 2); // Pretty print JSON
+          
+          // Alert and redirect
+          alert('Course added successfully!');
+          window.location.href = '/pages/all-courses.html';
         })
         .catch(error => {
           console.error('Error:', error);
           alert('Failed to add course. Please try again.');
         });
     });
-
-    // 清除按钮
+  
+    // Clear button
     document.getElementById('clearButton').addEventListener('click', function() {
       document.getElementById('courseForm').reset();
+      document.getElementById('jsonDisplay').style.display = 'none'; // Hide JSON display on clear
     });
-
-    // 返回按钮
+  
+    // Go back button
     document.getElementById('backButton').addEventListener('click', function() {
       window.history.back();
     });
+  
+    // Fetch and populate titles
+    fetch('/titles')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then(titles => {
+        const titleSelect = document.getElementById('title');
+        titles.forEach(title => {
+          const option = document.createElement('option');
+          option.value = title;
+          option.text = title;
+          titleSelect.add(option);
+        });
+      })
+      .catch(error => console.error('Error fetching titles:', error));
   </script>
+  
 </body>
 </html>
