@@ -24,39 +24,65 @@
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
-      const name = urlParams.get('name');
+      const oldName = urlParams.get('name');
 
-      document.getElementById('title').value = name;
+      document.getElementById('title').value = oldName;
 
       document.getElementById('editTitleForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
         const newName = document.getElementById('title').value;
 
+        // Update titles.json
         fetch('../database/titles.json')
           .then(response => response.json())
-          .then(data => {
-            data[index] = newName; // Update title
+          .then(titles => {
+            titles[index] = newName; // Update title
             return fetch('http://localhost:3000/update-titles', { // Endpoint to update titles.json
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(data),
+              body: JSON.stringify(titles),
             });
           })
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-            // Redirect back to the title list
+
+            // Update courses.json
+            return fetch('../database/courses.json')
+          })
+          .then(response => response.json())
+          .then(courses => {
+            courses.forEach(course => {
+              if (course.title === oldName) {
+                course.title = newName; // Update course title
+              }
+            });
+
+            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(courses),
+            });
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+
+            // Alert and redirect
+            alert('Title and associated courses updated successfully!');
             window.location.href = '/pages/all-titles.html';
           })
           .catch(error => console.error('Error:', error));
       });
     });
-  </script>
-  <script>
+
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
       .then(response => response.text())
