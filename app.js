@@ -89,18 +89,6 @@ app.post('/add-presenter', async (req, res) => {
   }
 });
 
-// Endpoint to save course info to 'courses.json'
-app.post('/add-course', async (req, res) => {
-  try {
-    const courses = await readJSONFile('database/courses.json');
-    courses.push(req.body);
-    await writeJSONFile('database/courses.json', courses);
-    res.send('Data saved');
-  } catch (err) {
-    res.status(500).send('Error saving data');
-  }
-});
-
 // Endpoint to update courses in 'courses.json'
 app.post('/update-courses', async (req, res) => {
   try {
