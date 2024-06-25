@@ -8,7 +8,7 @@ const XLSX = require('xlsx');
 const app = express();
 const PORT = 3000;
 
-// 設置 Multer 來保存文件
+// Set up Multer to store files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'schedule/');
@@ -19,12 +19,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
 
-// serve static files from the root and pages directories
+// Serve static files from 'pages' and root directories
 app.use('/pages', express.static(path.join(__dirname, 'pages')));
-app.use(express.static(__dirname)); // serve static files from root
+app.use(express.static(__dirname));
 
+// Function to read JSON files
 const readJSONFile = (relativePath) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path.join(__dirname, relativePath), 'utf-8', (err, data) => {
@@ -34,6 +35,7 @@ const readJSONFile = (relativePath) => {
   });
 };
 
+// Function to write JSON files
 const writeJSONFile = (relativePath, data) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(path.join(__dirname, relativePath), JSON.stringify(data, null, 2), (err) => {
@@ -43,7 +45,7 @@ const writeJSONFile = (relativePath, data) => {
   });
 };
 
-// show titles
+// Endpoint to fetch titles from 'titles.json'
 app.get('/titles', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -53,7 +55,7 @@ app.get('/titles', async (req, res) => {
   }
 });
 
-// show presenters
+// Endpoint to fetch presenters from 'presenters.json'
 app.get('/presenters', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -63,7 +65,7 @@ app.get('/presenters', async (req, res) => {
   }
 });
 
-// add new course title
+// Endpoint to add a new course title to 'titles.json'
 app.post('/add-title', async (req, res) => {
   try {
     const titles = await readJSONFile('database/titles.json');
@@ -75,7 +77,7 @@ app.post('/add-title', async (req, res) => {
   }
 });
 
-// add new presenter
+// Endpoint to add a new presenter to 'presenters.json'
 app.post('/add-presenter', async (req, res) => {
   try {
     const presenters = await readJSONFile('database/presenters.json');
@@ -87,7 +89,7 @@ app.post('/add-presenter', async (req, res) => {
   }
 });
 
-// save course info
+// Endpoint to save course info to 'courses.json'
 app.post('/add-course', async (req, res) => {
   try {
     const courses = await readJSONFile('database/courses.json');
@@ -99,7 +101,7 @@ app.post('/add-course', async (req, res) => {
   }
 });
 
-// update courses
+// Endpoint to update courses in 'courses.json'
 app.post('/update-courses', async (req, res) => {
   try {
     await writeJSONFile('database/courses.json', req.body);
@@ -109,7 +111,7 @@ app.post('/update-courses', async (req, res) => {
   }
 });
 
-// update titles
+// Endpoint to update titles in 'titles.json'
 app.post('/update-titles', async (req, res) => {
   try {
     await writeJSONFile('database/titles.json', req.body);
@@ -119,7 +121,7 @@ app.post('/update-titles', async (req, res) => {
   }
 });
 
-// update presenters
+// Endpoint to update presenters in 'presenters.json'
 app.post('/update-presenters', async (req, res) => {
   try {
     await writeJSONFile('database/presenters.json', req.body);
@@ -129,19 +131,7 @@ app.post('/update-presenters', async (req, res) => {
   }
 });
 
-// // 保存 JSON 文件的 API
-// app.post('/save-json', (req, res) => {
-//   const { filename, data } = req.body;
-//   const filePath = path.join(__dirname, 'schedule', `${filename}.json`);
-//   fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
-//     if (err) {
-//       return res.status(500).send('Error saving file');
-//     }
-//     res.send('File saved successfully');
-//   });
-// });
-
-// 保存 JSON 文件的端点
+// Endpoint to save JSON files to 'schedule' directory
 app.post('/save-json', (req, res) => {
   const { filename, content } = req.body;
   if (!filename || !content) {
@@ -159,7 +149,7 @@ app.post('/save-json', (req, res) => {
   });
 });
 
-// 保存 Excel 文件的 API
+// Endpoint to save Excel files to 'schedule' directory
 app.post('/save-excel', (req, res) => {
   const { filename, data } = req.body;
   const filePath = path.join(__dirname, 'schedule', `${filename}.xlsx`);
@@ -170,6 +160,7 @@ app.post('/save-excel', (req, res) => {
   res.send('File saved successfully');
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}/pages/main.html`);
 });
