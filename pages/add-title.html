@@ -16,6 +16,10 @@
         <label for="courseTitle">Course Title:</label>
         <input type="text" class="form-control" id="courseTitle" name="courseTitle" required>
       </div>
+      <div class="form-group">
+        <label for="yearsOfExperience">Years of Experience:</label>
+        <input type="number" class="form-control" id="yearsOfExperience" name="yearsOfExperience" min="0" required>
+      </div>
       <button type="submit" class="btn btn-primary">Add Title</button>
       <button type="button" class="btn btn-secondary" id="clearButton">Clear</button>
       <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
@@ -27,13 +31,14 @@
       event.preventDefault();
 
       const courseTitle = document.getElementById('courseTitle').value;
+      const yearsOfExperience = document.getElementById('yearsOfExperience').value;
 
       fetch('/add-title', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title: courseTitle }),
+        body: JSON.stringify({ title: courseTitle, years_of_experience: yearsOfExperience }),
       })
       .then(response => {
         if (!response.ok) {
@@ -58,12 +63,7 @@
     document.getElementById('backButton').addEventListener('click', function() {
       window.history.back();
     });
-  </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-    // JavaScript to dynamically load menu bar
+
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
@@ -71,5 +71,8 @@
       })
       .catch(error => console.error('Error loading menu:', error));
   </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
