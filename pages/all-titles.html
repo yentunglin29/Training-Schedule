@@ -14,58 +14,86 @@
       <h1>All Course Titles</h1>
       <a href="/pages/add-title.html" class="btn btn-primary">Add New Course Title</a>
     </div>
+
+    <div class="form-group">
+      <label for="experienceFilter">Filter by Years of Experience:</label>
+      <select id="experienceFilter" class="form-control">
+        <option value="all">All</option>
+        <option value="0">0 years</option>
+        <option value="1">1 year</option>
+        <option value="2">2 years</option>
+        <option value="3">3 years</option>
+        <option value="4">4 years</option>
+      </select>
+    </div>
+
     <ul id="titleList" class="list-group"></ul>
   </div>
 
   <script>
-    // fetch titles from JSON
-    fetch('../database/titles.json')
-      .then(response => response.json())
-      .then(data => {
-        const titleList = document.getElementById('titleList');
-        data.forEach((title, index) => {
-          const listItem = document.createElement('li');
-          listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-          listItem.innerHTML = `
-            ${title}
-            <div>
-              <button class="btn btn-sm btn-warning" onclick="editTitle(${index}, '${title}')">Edit</button>              
-              <button class="btn btn-sm btn-danger" onclick="deleteTitle(${index})">Delete</button>
-            </div>
-          `;
-          titleList.appendChild(listItem);
-        });
-      })
-      .catch(error => console.error('Error:', error));
+    document.getElementById('experienceFilter').addEventListener('change', function() {
+      const selectedFilter = this.value;
+      localStorage.setItem('selectedFilter', selectedFilter);
+      fetchTitles(selectedFilter);
+    });
 
-    // Function to redirect to edit page
-    function editTitle(index, name) {
-      const url = new URL('/pages/edit-title.html', window.location.origin);
-      url.searchParams.append('index', index);
-      url.searchParams.append('name', name);
-      window.location.href = url;
-    }
-
-    // delete title function
-    function deleteTitle(index) {
+    function fetchTitles(filter) {
       fetch('../database/titles.json')
         .then(response => response.json())
         .then(data => {
-          data.splice(index, 1); // Remove the title from the array
-          return fetch('http://localhost:3000/update-titles', { // Endpoint to update titles.json
+          updateTitleList(data, filter);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateTitleList(data, filter) {
+      const titleList = document.getElementById('titleList');
+      titleList.innerHTML = '';
+      const filteredData = filter === 'all' ? data : data.filter(title => title.years_of_experience == filter);
+      filteredData.forEach((title, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.setAttribute('data-index', index);
+        listItem.innerHTML = `
+          ${title.title} - ${title.years_of_experience} years
+          <div>
+            <button class="btn btn-sm btn-warning" onclick="editTitle(${index}, '${title.title}', '${title.years_of_experience}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTitle(${index}, this)">Delete</button>
+          </div>
+        `;
+        titleList.appendChild(listItem);
+      });
+    }
+
+    function editTitle(index, name, years_of_experience) {
+      const url = new URL('/pages/edit-title.html', window.location.origin);
+      url.searchParams.append('index', index);
+      url.searchParams.append('name', name);
+      url.searchParams.append('years_of_experience', years_of_experience);
+      window.location.href = url;
+    }
+
+    function deleteTitle(index, button) {
+      const selectedFilter = localStorage.getItem('selectedFilter') || 'all';
+      fetch('../database/titles.json')
+        .then(response => response.json())
+        .then(data => {
+          data.splice(index, 1);
+          return fetch('http://localhost:3000/update-titles', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            // Remove the title from the DOM
+            const listItem = button.closest('li');
+            listItem.remove();
           });
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          // Reload the page or update the UI to reflect changes
-          window.location.reload();
         })
         .catch(error => console.error('Error:', error));
     }
