@@ -6,7 +6,6 @@
   <title>訂餐與住宿統計表</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
-
   <style>
     table {
       width: 100%;
@@ -21,6 +20,19 @@
     th {
       background-color: #f2f2f2;
     }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .download-btn {
+      font-size: 12px;
+    }
+    .comment-area {
+      width: 100%;
+      height: 50px;
+      resize: vertical;
+    }
   </style>
 </head>
 <body>
@@ -34,13 +46,17 @@
       <label for="datepicker">選擇日期:</label>
       <input type="text" id="datepicker" class="form-control" placeholder="選擇日期範圍">
     </div>
-    <button id="generateTableBtn" class="btn btn-primary">生成表格</button>
+    <div class="button-group">
+      <button id="generateTableBtn" class="btn btn-primary">生成表格</button>
+      <button id="downloadPdfBtn" class="btn btn-success download-btn">PDF 下載</button>
+    </div>
 
     <!-- 容納表格 -->
     <div id="tables-container">
       <!-- Table will be populated by JavaScript -->
     </div>
   </div>
+
   <script>
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
@@ -50,137 +66,204 @@
       })
       .catch(error => console.error('Error loading menu:', error));
   </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.herokuapp.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.zh-TW.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vxe-table-plugin-export-pdf/fonts/source-han-sans-normal.js"></script>
+
   <script>
-    // 日期選擇器設置
-    $('#datepicker').datepicker({
-      format: 'yyyy-mm-dd',
-      language: 'zh-TW',
-      multidate: true,
-      multidateSeparator: ',',
-      todayHighlight: true
-    });
+    $(document).ready(function() {
+      // 日期選擇器設置
+      $('#datepicker').datepicker({
+        format: 'yyyy-mm-dd',
+        language: 'zh-TW',
+        multidate: true,
+        multidateSeparator: ',',
+        todayHighlight: true
+      });
 
-    // 預設行數據
-    const defaultRowsData = [
-      { title: '受訓-新進人員', values: [] },
-      { title: '受訓-新進人員(線上)', values: [] },
-      { title: '受訓-業務人員(旁聽)', values: [] },
-      { title: '住宿', values: [] },
-      { title: '行銷+行政(含珊珊)', values: [] },
-      { title: '受邀講師', values: [] },
-      // { title: '不在人員(請填上姓名及特殊備註)', values: [] }
-    ];
+      // 預設行數據
+      const defaultRowsData = [
+        { title: '受訓-新進人員', values: [] },
+        { title: '受訓-新進人員(線上)', values: [] },
+        { title: '受訓-業務人員(旁聽)', values: [] },
+        { title: '住宿', values: [] },
+        { title: '行銷+行政(含珊珊)', values: [] },
+        { title: '受邀講師', values: [] },
+        // { title: '不在人員(請填上姓名及特殊備註)', values: [] }
+      ];
 
-    // 生成表格
-    document.getElementById('generateTableBtn').addEventListener('click', function() {
-      const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate).sort(); // 确保日期排序
-      const tablesContainer = document.getElementById('tables-container');
-      tablesContainer.innerHTML = ''; // 清空之前的表格
+      // 生成表格
+      $('#generateTableBtn').click(function() {
+        const selectedDates = $('#datepicker').datepicker('getDates').map(formatDate).sort(); // 確保日期排序
+        const tablesContainer = $('#tables-container');
+        tablesContainer.empty(); // 清空之前的表格
 
-      addTable(selectedDates);
-    });
+        addTable(selectedDates);
+      });
 
-    // 格式化日期為 yyyy-mm-dd
-    function formatDate(date) {
-      const d = new Date(date);
-      const month = '' + (d.getMonth() + 1);
-      const day = '' + d.getDate();
-      const year = d.getFullYear();
+      // 格式化日期為 yyyy-mm-dd
+      function formatDate(date) {
+        const d = new Date(date);
+        const month = '' + (d.getMonth() + 1);
+        const day = '' + d.getDate();
+        const year = d.getFullYear();
 
-      return [year, (month.length < 2 ? '0' : '') + month, (day.length < 2 ? '0' : '') + day].join('-');
-    }
+        return [year, (month.length < 2 ? '0' : '') + month, (day.length < 2 ? '0' : '') + day].join('-');
+      }
 
-    // 添加新的表格
-    function addTable(dates) {
-      const tablesContainer = document.getElementById('tables-container');
-      const tableElement = document.createElement('div');
-      tableElement.classList.add('table-wrapper');
+      // 添加新的表格
+      function addTable(dates) {
+        const tablesContainer = $('#tables-container');
+        const tableElement = $('<div class="table-wrapper"></div>');
 
-      tableElement.innerHTML = createTableHTML(defaultRowsData, dates);
-      tablesContainer.appendChild(tableElement);
+        tableElement.html(createTableHTML(defaultRowsData, dates));
+        tablesContainer.append(tableElement);
 
-      // 計算新表格的總數
-      tableElement.querySelectorAll('select').forEach(select => calculateTotal(select));
-    }
+        // 計算新表格的總數
+        tableElement.find('select').each(function() {
+          calculateTotal(this);
+        });
+      }
 
-    // 創建表格 HTML 字符串
-    function createTableHTML(rowsData, dates) {
-      return `
-        <table>
-          <thead>
-            <tr>
-              <th> </th>
-              ${dates.map(date => `
-                <th>
-                  <input type="text" value="${date}" class="form-control" placeholder="月/日" style="width: 100px;" readonly>
-                </th>
-              `).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsData.map(rowData => `
+      // 創建表格 HTML 字符串
+      function createTableHTML(rowsData, dates) {
+        return `
+          <table>
+            <thead>
               <tr>
-                <td>${rowData.title}</td>
+                <th> </th>
                 ${dates.map(date => `
-                  <td>
-                    ${generateSelect(0)}
-                  </td>
+                  <th>
+                    <input type="text" value="${date}" class="form-control" placeholder="月/日" style="width: 100px;" readonly>
+                  </th>
                 `).join('')}
               </tr>
-            `).join('')}
-            <tr>
-              <td><strong>total 人數</strong></td>
-              ${dates.map(() => '<td><strong>0</strong></td>').join('')}
-            </tr>
-            <tr>
-              <td><strong>Location</strong></td>
-              ${dates.map(() => `<td>${generateCitySelect()}</td>`).join('')}
-            </tr>
-          </tbody>
-        </table>
-      `;
-    }
-
-    // 生成 <select> 元素
-    function generateSelect(selected = 0) {
-      let select = '<select class="form-control" onchange="calculateTotal(this)">';
-      for (let i = 0; i <= 10; i++) {
-        select += `<option value="${i}" ${i === selected ? 'selected' : ''}>${i}</option>`;
+            </thead>
+            <tbody>
+              ${rowsData.map(rowData => `
+                <tr>
+                  <td>${rowData.title}</td>
+                  ${dates.map(date => `
+                    <td>
+                      ${generateSelect(0)}
+                    </td>
+                  `).join('')}
+                </tr>
+              `).join('')}
+              <tr>
+                <td><strong>不在人員(請填上姓名及特殊備註)</strong></td>
+                ${dates.map(() => '<td><textarea class="comment-area"></textarea></td>').join('')}
+              </tr>
+              <tr>
+                <td><strong>total 人數</strong></td>
+                ${dates.map(() => '<td><strong>0</strong></td>').join('')}
+              </tr>
+              <tr>
+                <td><strong>Location</strong></td>
+                ${dates.map(() => `<td>${generateCitySelect()}</td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        `;
       }
-      select += '</select>';
-      return select;
-    }
 
-    // 生成城市選擇 <select> 元素
-    function generateCitySelect() {
-      const cities = ['台北', '台中', '高雄'];
-      let select = '<select class="form-control">';
-      cities.forEach(city => {
-        select += `<option value="${city}">${city}</option>`;
+      // 生成 <select> 元素
+      function generateSelect(selected = 0) {
+        let select = '<select class="form-control" onchange="calculateTotal(this)">';
+        for (let i = 0; i <= 10; i++) {
+          select += `<option value="${i}" ${i === selected ? 'selected' : ''}>${i}</option>`;
+        }
+        select += '</select>';
+        return select;
+      }
+
+      // 生成城市選擇 <select> 元素
+      function generateCitySelect() {
+        const cities = ['台北', '台中', '高雄'];
+        let select = '<select class="form-control">';
+        cities.forEach(city => {
+          select += `<option value="${city}">${city}</option>`;
+        });
+        select += '</select>';
+        return select;
+      }
+
+      // 計算每一列的總數
+      window.calculateTotal = function(selectElement) {
+        const table = $(selectElement).closest('table');
+        const tbody = table.find('tbody');
+        const totalRow = tbody.find('tr:nth-last-of-type(2)');
+
+        const colIndex = $(selectElement).closest('tr').children().index($(selectElement).closest('td'));
+        let total = 0;
+        tbody.find('tr:not(:nth-last-of-type(3)):not(:nth-last-of-type(2)):not(:nth-last-of-type(1))').each(function() {
+          const select = $(this).children().eq(colIndex).find('select');
+          total += parseInt(select.val()) || 0;
+        });
+        totalRow.children().eq(colIndex).text(total);
+      };
+
+      // PDF Download Function
+      $('#downloadPdfBtn').click(function() {
+        const tables = $('#tables-container .table-wrapper');
+        if (tables.length === 0) {
+          alert('No table available for download.');
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        pdf.addFont('SourceHanSans-Normal.ttf', 'SourceHanSans-Normal', 'normal');
+        pdf.setFont('SourceHanSans-Normal');
+
+        tables.each(function(index, tableElement) {
+          if (index > 0) pdf.addPage();
+
+          const table = $(tableElement).find('table');
+          const tableData = [];
+
+          table.find('thead tr').each(function() {
+            const row = [];
+            $(this).find('th, td').each(function() {
+              row.push($(this).find('input').length ? $(this).find('input').val() : $(this).text());
+            });
+            tableData.push(row);
+          });
+
+          table.find('tbody tr').each(function() {
+            const row = [];
+            $(this).find('th, td').each(function() {
+              if ($(this).find('select').length) {
+                row.push($(this).find('select').val());
+              } else if ($(this).find('textarea').length) {
+                row.push($(this).find('textarea').val());
+              } else {
+                row.push($(this).text());
+              }
+            });
+            tableData.push(row);
+          });
+
+          pdf.autoTable({
+            head: [tableData[0]],
+            body: tableData.slice(1),
+            startY: 60,
+            didDrawPage: function () {
+              pdf.setFont('SourceHanSans-Normal', 'normal');
+              pdf.setFontSize(12);
+              pdf.text('訂餐與住宿統計表', 20, 50);
+            },
+            styles: { font: 'SourceHanSans-Normal', fontStyle: 'normal' }
+          });
+        });
+
+        pdf.save('訂餐與住宿統計表.pdf');
       });
-      select += '</select>';
-      return select;
-    }
-
-    // 計算每一列的總數
-    function calculateTotal(selectElement) {
-      const table = selectElement.closest('table');
-      const tbody = table.querySelector('tbody');
-      const totalRow = tbody.querySelector('tr:nth-last-of-type(2)');
-
-      const colIndex = Array.from(selectElement.closest('tr').children).indexOf(selectElement.closest('td'));
-      let total = 0;
-      tbody.querySelectorAll('tr:not(:nth-last-of-type(2)):not(:nth-last-of-type(1))').forEach(row => {
-        const select = row.children[colIndex].querySelector('select');
-        total += parseInt(select.value) || 0;
-      });
-      totalRow.children[colIndex].innerText = total;
-    }
+    });
   </script>
 </body>
 </html>
