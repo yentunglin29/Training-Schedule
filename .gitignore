@@ -1,12 +1,17 @@
 # Ignore Node Modules
 node_modules/
-/schedule
+schedule/
+cypress/
+database/
 
 package-lock.json
+cypress.config.js
 
 connection.txt
 to-do.txt
+Questions.txt
 
 database/presenters.json
 database/courses.json
 database/titles.json
+d
