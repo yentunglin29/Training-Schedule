@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const XLSX = require('xlsx');
 
 const app = express();
 const PORT = 3000;
@@ -135,17 +134,6 @@ app.post('/save-json', (req, res) => {
     }
     res.send('File saved successfully');
   });
-});
-
-// Endpoint to save Excel files to 'schedule' directory
-app.post('/save-excel', (req, res) => {
-  const { filename, data } = req.body;
-  const filePath = path.join(__dirname, 'schedule', `${filename}.xlsx`);
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Schedule');
-  XLSX.writeFile(workbook, filePath);
-  res.send('File saved successfully');
 });
 
 // Start server
