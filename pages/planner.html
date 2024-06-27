@@ -32,15 +32,15 @@
     .content-sidebar.active {
       display: block;
     }
-    .day { margin: 10px 0; font-size: 18px; }
-    .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .day { margin: 10px 0; font-size: 14px; }
+    .json-content { margin-top: 10px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
     th, td { border: 1px solid #dddddd; text-align: center; padding: 8px; }
-    th { background-color: #f2f2f2; }
-    .draggable { cursor: grab; }
-    .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; }
-    .download-btn { margin-top: 20px; }
-    .table-title { margin-bottom: 10px; }
+    th { background-color: #f2f2f2; font-size: 12px; }
+    .draggable { cursor: grab; font-size: 12px; }
+    .dropzone { min-height: 50px; background-color: #f8f9fa; border: 2px dashed #ced4da; margin-top: 10px; font-size: 12px; }
+    .download-btn { margin-top: 20px; font-size: 12px; }
+    .table-title { margin-bottom: 10px; font-size: 12px; }
     .selection-section {
       display: flex;
       justify-content: space-between;
@@ -49,12 +49,14 @@
     .selection-section > div {
       flex: 1;
       margin-right: 10px;
+      font-size: 12px;
     }
     .selection-section > div:last-child {
       margin-right: 0;
     }
     .selection-section .form-group {
       margin-bottom: 20px;
+      font-size: 12px;
     }
     .course-detail {
       border: 1px solid #ddd;
@@ -62,14 +64,15 @@
       padding: 10px;
       margin-bottom: 10px;
       background-color: #f9f9f9;
+      font-size: 12px;
     }
     .course-detail h5 {
       margin-bottom: 10px;
-      font-size: 16px;
+      font-size: 14px;
     }
     .course-detail p {
       margin-bottom: 5px;
-      font-size: 14px;
+      font-size: 12px;
     }
     .course-divider {
       border-top: 1px solid #ddd;
@@ -157,9 +160,12 @@
         const filename = prompt('Enter file name:', 'schedule');
         if (!filename) return;
 
-        let existingContent = JSON.parse(localStorage.getItem(filename) || '[]');
+        // Clear existing content in local storage
+        localStorage.removeItem(filename);
 
         const tables = document.querySelectorAll('#schedule-container .day');
+        let newContent = [];
+
         tables.forEach((dayElement) => {
           const day = dayElement.querySelector('.day-info').innerText;
           const tableTitle = dayElement.querySelector('.table-title-input').value;
@@ -170,17 +176,18 @@
             });
             const header = rows.shift();
 
-            existingContent.push({ day, tableTitle, header, rows });
+            newContent.push({ day, tableTitle, header, rows });
           }
         });
 
-        localStorage.setItem(filename, JSON.stringify(existingContent));
+        // Store new content in local storage
+        localStorage.setItem(filename, JSON.stringify(newContent));
 
         const pdf = new jsPDF('p', 'pt', 'a4');
         pdf.addFont('SourceHanSans-Normal.ttf', 'SourceHanSans-Normal', 'normal');
         pdf.setFont('SourceHanSans-Normal');
 
-        existingContent.forEach((content, index) => {
+        newContent.forEach((content, index) => {
           if (index > 0) pdf.addPage();
           pdf.autoTable({
             head: [content.header],
@@ -217,7 +224,6 @@
           const dayElement = document.createElement('div');
           dayElement.classList.add('day');
           dayElement.innerHTML = `
-            <!-- <div class="day-info">Day ${index + 1}: ${date}</div> -->
             <div class="day-info">${date}</div>
             <input type="text" class="form-control table-title-input" placeholder="Enter title">
             <div class="json-content">
@@ -350,6 +356,12 @@
           const toTimeMinutes = fromTimeMinutes + parseInt(course.duration);
           const toTime = convertMinutesToTime(toTimeMinutes);
 
+          // Check if the dropzone already has content and replace it
+          if (dropzone.dataset.course) {
+            const confirmReplace = confirm('This slot already has an item. Do you want to replace it?');
+            if (!confirmReplace) return;
+          }
+
           dropzone.innerHTML = `
             <td>${fromTime}</td>
             <td>${toTime}</td>
@@ -357,6 +369,7 @@
             <td>${course.content.replace(/\n/g, '<br>')}</td>
             <td>${course.presenter.join(', ')}</td>
           `;
+          dropzone.dataset.course = courseData; // Store course data
 
           const newDropzone = document.createElement('tr');
           newDropzone.classList.add('dropzone');
