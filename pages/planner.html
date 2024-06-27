@@ -301,7 +301,7 @@
                   courseElement.innerHTML = `
                     <h5>${course.title}</h5>
                     <p><strong>Topic:</strong> ${course.topic}</p>
-                    <p><strong>Content:</strong> ${course.content.replace(/\n/g, '<br>')}</p>
+                    <p><strong>Content:</strong> ${course.content ? course.content.replace(/\n/g, '<br>') : ''}</p>
                     <p><strong>Duration:</strong> ${course.duration} minutes</p>
                     <p><strong>Presenters:</strong> ${course.presenter.join(', ')}</p>
                   `;
@@ -343,7 +343,7 @@
       function drop(event) {
         event.preventDefault();
         const courseData = event.dataTransfer.getData("text");
-        if (courseData) {
+        try {
           const course = JSON.parse(courseData);
           const dropzone = event.target.closest('.dropzone');
           if (!dropzone) return;
@@ -366,7 +366,7 @@
             <td>${fromTime}</td>
             <td>${toTime}</td>
             <td>${course.topic}</td>
-            <td>${course.content.replace(/\n/g, '<br>')}</td>
+            <td>${course.content ? course.content.replace(/\n/g, '<br>') : ''}</td>
             <td>${course.presenter.join(', ')}</td>
           `;
           dropzone.dataset.course = courseData; // Store course data
@@ -383,6 +383,8 @@
           newDropzone.addEventListener('dragover', allowDrop);
           newDropzone.addEventListener('drop', drop);
           dropzone.parentNode.appendChild(newDropzone);
+        } catch (e) {
+          console.error('Error parsing course data:', e);
         }
       }
 
