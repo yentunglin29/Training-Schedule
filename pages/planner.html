@@ -270,10 +270,10 @@
         .then(response => response.json())
         .then(titles => {
           const titleSelect = document.getElementById('titleSelect');
-          titles.forEach(title => {
+          titles.forEach(titleObj => {
             const option = document.createElement('option');
-            option.value = title;
-            option.text = title;
+            option.value = titleObj.title;
+            option.text = titleObj.title;
             titleSelect.add(option);
           });
         })
