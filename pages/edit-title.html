@@ -16,6 +16,10 @@
         <label for="title">Title:</label>
         <input type="text" class="form-control" id="title" name="title" required>
       </div>
+      <div class="form-group">
+        <label for="yearsOfExperience">Years of Experience:</label>
+        <input type="number" class="form-control" id="yearsOfExperience" name="yearsOfExperience" min="0" required>
+      </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
   </div>
@@ -25,20 +29,23 @@
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
       const oldName = urlParams.get('name');
+      const oldYearsOfExperience = urlParams.get('years_of_experience');
 
       document.getElementById('title').value = oldName;
+      document.getElementById('yearsOfExperience').value = oldYearsOfExperience;
 
       document.getElementById('editTitleForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
         const newName = document.getElementById('title').value;
+        const newYearsOfExperience = document.getElementById('yearsOfExperience').value;
 
-        // Update titles.json
         fetch('../database/titles.json')
           .then(response => response.json())
           .then(titles => {
-            titles[index] = newName; // Update title
-            return fetch('http://localhost:3000/update-titles', { // Endpoint to update titles.json
+            titles[index].title = newName; // Update title
+            titles[index].years_of_experience = newYearsOfExperience; // Update years of experience
+            return fetch('http://localhost:3000/update-titles', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -51,8 +58,7 @@
               throw new Error('Network response was not ok');
             }
 
-            // Update courses.json
-            return fetch('../database/courses.json')
+            return fetch('../database/courses.json');
           })
           .then(response => response.json())
           .then(courses => {
@@ -62,7 +68,7 @@
               }
             });
 
-            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+            return fetch('http://localhost:3000/update-courses', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -75,7 +81,6 @@
               throw new Error('Network response was not ok');
             }
 
-            // Alert and redirect
             alert('Title and associated courses updated successfully!');
             window.location.href = '/pages/all-titles.html';
           })
@@ -83,7 +88,6 @@
       });
     });
 
-    // JavaScript to dynamically load menu bar
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
