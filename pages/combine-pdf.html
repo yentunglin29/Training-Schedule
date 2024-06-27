@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combine PDFs</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .content {
+      margin: 20px;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+    .file-input-wrapper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .file-input-wrapper input {
+      flex: 1;
+    }
+    .file-input-wrapper button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu-bar"></div>
+  
+  <div class="container">
+    <h1 class="mt-4 mb-4">Combine PDFs</h1>
+
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <h2>Combine PDFs</h2>
+        </div>
+        <div class="card-body">
+          <div id="fileInputsContainer">
+            <!-- Initial file input fields will be added here by JavaScript -->
+          </div>
+          <p>
+            <button id="addFileInputBtn" class="btn btn-secondary">+</button>
+          </p>
+          <p>
+            <button id="combineBtn" class="btn btn-primary">Combine PDFs</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script>
+    // JavaScript to dynamically load menu bar
+    fetch('menu.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('menu-bar').innerHTML = data;
+      })
+      .catch(error => console.error('Error loading menu:', error));
+
+    // Function to add a new file input
+    function addFileInput() {
+      const fileInputWrapper = document.createElement('div');
+      fileInputWrapper.classList.add('file-input-wrapper');
+      fileInputWrapper.innerHTML = `
+        <input type="file" class="form-control pdf-file" accept="application/pdf">
+        <button class="btn btn-danger remove-file-input-btn">-</button>
+      `;
+      document.getElementById('fileInputsContainer').appendChild(fileInputWrapper);
+
+      // Add event listener to remove button
+      fileInputWrapper.querySelector('.remove-file-input-btn').addEventListener('click', function() {
+        fileInputWrapper.remove();
+      });
+    }
+
+    // Add initial file inputs (fixed length)
+    const initialFileInputCount = 3; // Define the number of initial file inputs
+    for (let i = 0; i < initialFileInputCount; i++) {
+      addFileInput();
+    }
+
+    // Add new file input on button click
+    document.getElementById('addFileInputBtn').addEventListener('click', addFileInput);
+
+    // Combine PDFs on button click
+    document.getElementById('combineBtn').addEventListener('click', async function() {
+      const pdfFiles = document.querySelectorAll('.pdf-file');
+      if (!pdfFiles.length) {
+        alert('Please select PDF files to combine');
+        return;
+      }
+
+      const pdfDoc = await PDFLib.PDFDocument.create();
+      for (const pdfFile of pdfFiles) {
+        if (pdfFile.files.length === 0) continue;
+        const arrayBuffer = await pdfFile.files[0].arrayBuffer();
+        const donorPdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        const pages = await pdfDoc.copyPages(donorPdfDoc, donorPdfDoc.getPageIndices());
+        pages.forEach(page => pdfDoc.addPage(page));
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      saveAs(blob, 'combined.pdf');
+    });
+  </script>
+</body>
+</html>
