@@ -24,6 +24,10 @@ app.use(express.json()); // Parse JSON bodies
 app.use('/pages', express.static(path.join(__dirname, 'pages')));
 app.use(express.static(__dirname));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages', 'main.html'));
+});
+
 // Function to read JSON files
 const readJSONFile = (relativePath) => {
   return new Promise((resolve, reject) => {
