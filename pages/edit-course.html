@@ -13,20 +13,22 @@
     <h1>Edit Course</h1>
     <form id="editCourseForm">
       <div class="form-group">
-        <label for="courseTitle">Course Title:</label>
-        <input type="text" class="form-control" id="courseTitle" name="courseTitle" required>
+        <label for="title">Course Title:</label>
+        <select class="form-control" id="title" name="title" required>
+          <option value="">Select Course Title</option>
+        </select>
       </div>
       <div class="form-group">
-        <label for="courseTopic">Course Topic:</label>
-        <input type="text" class="form-control" id="courseTopic" name="courseTopic" required>
+        <label for="topic">Course Topic:</label>
+        <input type="text" class="form-control" id="topic" name="topic" required>
       </div>
       <div class="form-group">
-        <label for="courseContent">Course Content:</label>
-        <textarea class="form-control" id="courseContent" name="courseContent" rows="4" required></textarea>
+        <label for="content">Course Content:</label>
+        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
       </div>
       <div class="form-group">
-        <label for="courseDuration">Course Duration (min):</label>
-        <input type="number" class="form-control" id="courseDuration" name="courseDuration" required>
+        <label for="duration">Course Duration (min):</label>
+        <input type="number" class="form-control" id="duration" name="duration" required>
       </div>
       <div class="form-group">
         <label>Presenters:</label>
@@ -35,7 +37,18 @@
       <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
   </div>
-
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Dynamic menu bar loading
+    fetch('menu.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('menu-bar').innerHTML = data;
+      })
+      .catch(error => console.error('Error loading menu:', error));
+  </script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -43,9 +56,14 @@
 
       let course; // Variable to store current course data
 
-      // Fetch presenter list from JSON file
+      // Fetch and populate presenters
       fetch('../database/presenters.json')
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
+          return response.json();
+        })
         .then(presenters => {
           const presenterList = document.getElementById('presenterList');
           presenterList.innerHTML = ''; // Clear existing content
@@ -77,10 +95,10 @@
         .then(data => {
           if (data[index]) {
             course = data[index];
-            document.getElementById('courseTitle').value = course.title;
-            document.getElementById('courseTopic').value = course.topic;
-            document.getElementById('courseContent').value = course.content;
-            document.getElementById('courseDuration').value = course.duration;
+            document.getElementById('title').value = course.title;
+            document.getElementById('topic').value = course.topic;
+            document.getElementById('content').value = course.content;
+            document.getElementById('duration').value = course.duration;
 
             // Set selected presenters
             if (course.presenter && Array.isArray(course.presenter)) {
@@ -102,10 +120,10 @@
         event.preventDefault();
 
         const updatedCourse = {
-          title: document.getElementById('courseTitle').value,
-          topic: document.getElementById('courseTopic').value,
-          content: document.getElementById('courseContent').value,
-          duration: parseInt(document.getElementById('courseDuration').value),
+          title: document.getElementById('title').value,
+          topic: document.getElementById('topic').value,
+          content: document.getElementById('content').value,
+          duration: parseInt(document.getElementById('duration').value),
           presenter: Array.from(document.querySelectorAll('#presenterList input:checked')).map(cb => cb.value)
         };
 
@@ -114,7 +132,7 @@
           .then(data => {
             if (data[index]) {
               data[index] = updatedCourse; // Update course data
-              return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
+              return fetch('/update-courses', { // Endpoint to update courses.json
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -135,15 +153,26 @@
           })
           .catch(error => console.error('Error:', error));
       });
-    });
 
-    // Dynamic menu bar loading
-    fetch('menu.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('menu-bar').innerHTML = data;
-      })
-      .catch(error => console.error('Error loading menu:', error));
+      // Fetch and populate titles
+      fetch('/titles')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(titles => {
+          const titleSelect = document.getElementById('title');
+          titles.forEach(title => {
+            const option = document.createElement('option');
+            option.value = title.title;
+            option.text = title.title;
+            titleSelect.add(option);
+          });
+        })
+        .catch(error => console.error('Error fetching titles:', error));
+    });
   </script>
 </body>
 </html>
