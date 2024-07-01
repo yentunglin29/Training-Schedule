@@ -27,7 +27,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
-      const index = urlParams.get('index');
+      const index = parseInt(urlParams.get('index'), 10);
       const oldName = urlParams.get('name');
       const oldYearsOfExperience = urlParams.get('years_of_experience');
 
@@ -43,28 +43,31 @@
         fetch('/titles')
           .then(response => response.json())
           .then(titles => {
-            titles[index].title = newName; // Update title
-            titles[index].years_of_experience = newYearsOfExperience; // Update years of experience
-            return fetch('/update-titles', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(titles),
-            });
+            if (index >= 0 && index < titles.length) {
+              titles[index].title = newName;
+              titles[index].years_of_experience = newYearsOfExperience;
+              return fetch('/update-titles', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(titles),
+              });
+            } else {
+              throw new Error('Invalid index');
+            }
           })
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-
             return fetch('/courses');
           })
           .then(response => response.json())
           .then(courses => {
             courses.forEach(course => {
               if (course.title === oldName) {
-                course.title = newName; // Update course title
+                course.title = newName;
               }
             });
 
