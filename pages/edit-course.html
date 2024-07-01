@@ -24,7 +24,7 @@
       </div>
       <div class="form-group">
         <label for="content">Course Content:</label>
-        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+        <textarea class="form-control" id="content" name="content" rows="4"></textarea>
       </div>
       <div class="form-group">
         <label for="duration">Course Duration (min):</label>
@@ -35,29 +35,19 @@
         <div id="presenterList"></div>
       </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
+      <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
   </div>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-    // Dynamic menu bar loading
-    fetch('menu.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('menu-bar').innerHTML = data;
-      })
-      .catch(error => console.error('Error loading menu:', error));
-  </script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
-      const index = urlParams.get('index');
+      const id = urlParams.get('id');
 
       let course; // Variable to store current course data
 
       // Fetch and populate presenters
-      fetch('../database/presenters.json')
+      fetch('/presenters')
         .then(response => {
           if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
@@ -74,14 +64,14 @@
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'form-check-input';
-            checkbox.id = `presenter-${presenter}`;
-            checkbox.value = presenter;
+            checkbox.id = `presenter-${presenter._id}`;
+            checkbox.value = presenter._id;
             checkbox.name = 'presenter';
 
             const label = document.createElement('label');
             label.className = 'form-check-label';
-            label.htmlFor = `presenter-${presenter}`;
-            label.textContent = presenter;
+            label.htmlFor = `presenter-${presenter._id}`;
+            label.textContent = presenter.name;
 
             checkboxWrapper.appendChild(checkbox);
             checkboxWrapper.appendChild(label);
@@ -89,12 +79,12 @@
           });
 
           // Fetch course data and set form values
-          return fetch('../database/courses.json');
+          return fetch('/courses');
         })
         .then(response => response.json())
-        .then(data => {
-          if (data[index]) {
-            course = data[index];
+        .then(courses => {
+          course = courses.find(c => c._id === id);
+          if (course) {
             document.getElementById('title').value = course.title;
             document.getElementById('topic').value = course.topic;
             document.getElementById('content').value = course.content;
@@ -110,8 +100,8 @@
               });
             }
           } else {
-            console.error('Invalid course index:', index);
-            alert('Invalid course index. Please try again.');
+            console.error('Invalid course id:', id);
+            alert('Invalid course id. Please try again.');
           }
         })
         .catch(error => console.error('Error:', error));
@@ -120,6 +110,7 @@
         event.preventDefault();
 
         const updatedCourse = {
+          _id: id,
           title: document.getElementById('title').value,
           topic: document.getElementById('topic').value,
           content: document.getElementById('content').value,
@@ -127,31 +118,28 @@
           presenter: Array.from(document.querySelectorAll('#presenterList input:checked')).map(cb => cb.value)
         };
 
-        fetch('../database/courses.json')
-          .then(response => response.json())
-          .then(data => {
-            if (data[index]) {
-              data[index] = updatedCourse; // Update course data
-              return fetch('/update-courses', { // Endpoint to update courses.json
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-              });
-            } else {
-              throw new Error('Invalid course index');
-            }
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            // Alert and redirect
-            alert('Course updated successfully!');
-            window.location.href = '/pages/all-courses.html';
-          })
-          .catch(error => console.error('Error:', error));
+        fetch('/update-course', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify([updatedCourse]),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          alert('Course updated successfully!');
+          window.location.href = 'all-courses.html';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to update course. Please try again.');
+        });
+      });
+
+      document.getElementById('backButton').addEventListener('click', function() {
+        window.history.back();
       });
 
       // Fetch and populate titles
