@@ -23,7 +23,6 @@
       <a href="/pages/add-course.html" class="btn btn-primary">Add New Course</a>
     </div>
 
-    <!-- Add filter -->
     <div class="mb-3">
       <label for="titleFilter" class="form-label">Filter by Title:</label>
       <select id="titleFilter" class="form-control">
@@ -40,26 +39,39 @@
   </div>
 
   <script>
-    let courses = []; // Save all course data
-    let originalIndexes = []; // Save original indexes of courses
-    let selectedTitle = ''; // Save current filter condition
+    let courses = [];
+    let titles = [];
+    let selectedTitle = '';
 
-    // Load courses from MongoDB
-    fetch('/courses')
-      .then(response => response.json())
-      .then(data => {
-        courses = data; // Save to global variable
-        originalIndexes = data.map((_, index) => index); // Initialize original indexes
-        populateTitleFilter(); // Initialize title filter
-        displayCourses(courses); // Display all courses
-      })
-      .catch(error => console.error('Error:', error));
+    // Fetch data from both endpoints
+    Promise.all([
+      fetch('/courses').then(response => response.json()),
+      fetch('/presenters').then(response => response.json()),
+      fetch('/titles').then(response => response.json())
+    ])
+    .then(([coursesData, presentersData, titlesData]) => {
+      courses = coursesData;
+      titles = titlesData.map(title => title.title);
+      const presenterMap = presentersData.reduce((map, presenter) => {
+        map[presenter._id] = presenter.name;
+        return map;
+      }, {});
 
-    // Populate title filter
+      // Replace presenter IDs with names
+      courses.forEach(course => {
+        if (Array.isArray(course.presenter)) {
+          course.presenter = course.presenter.map(id => presenterMap[id] || id);
+        }
+      });
+
+      populateTitleFilter();
+      displayCourses(courses);
+    })
+    .catch(error => console.error('Error:', error));
+
     function populateTitleFilter() {
       const titleFilter = document.getElementById('titleFilter');
-      titleFilter.innerHTML = '<option value="">All Titles</option>'; // Clear existing content
-      const titles = [...new Set(courses.map(course => course.title))];
+      titleFilter.innerHTML = '<option value="">All Titles</option>';
       titles.forEach(title => {
         const option = document.createElement('option');
         option.value = title;
@@ -68,11 +80,10 @@
       });
     }
 
-    // Display course list
     function displayCourses(courseArray) {
       const courseList = document.getElementById('courseList');
-      courseList.innerHTML = ''; // Clear existing content
-      courseArray.forEach((course) => {
+      courseList.innerHTML = '';
+      courseArray.forEach(course => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
         listItem.innerHTML = `
@@ -94,38 +105,30 @@
       });
     }
 
-    // Filter courses
     document.getElementById('titleFilter').addEventListener('change', function() {
       selectedTitle = this.value;
       const filteredCourses = selectedTitle
         ? courses.filter(course => course.title === selectedTitle)
-        : courses; // Show all or filtered courses
-
-      originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // Update original indexes
+        : courses;
       displayCourses(filteredCourses);
     });
 
-    // Clear filters
     document.getElementById('clearButton').addEventListener('click', function() {
       document.getElementById('titleFilter').value = '';
       selectedTitle = '';
       displayCourses(courses);
-      originalIndexes = courses.map((_, index) => index); // Reset original indexes
     });
 
-    // Go back to previous page
     document.getElementById('backButton').addEventListener('click', function() {
       window.history.back();
     });
 
-    // Navigate to edit page
     function editCourse(id) {
       const url = new URL('/pages/edit-course.html', window.location.origin);
       url.searchParams.append('id', id);
       window.location.href = url;
     }
 
-    // Delete course
     function deleteCourse(id) {
       fetch('/delete-course', {
         method: 'POST',
@@ -138,12 +141,10 @@
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        // Remove course from the DOM
         courses = courses.filter(course => course._id !== id);
         const filteredCourses = selectedTitle
           ? courses.filter(course => course.title === selectedTitle)
           : courses;
-        originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // Update original indexes
         displayCourses(filteredCourses);
       })
       .catch(error => console.error('Error:', error));
@@ -154,7 +155,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
-    // Dynamically load menu
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
