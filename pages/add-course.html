@@ -165,8 +165,8 @@
         const titleSelect = document.getElementById('title');
         titles.forEach(title => {
           const option = document.createElement('option');
-          option.value = title;
-          option.text = title;
+          option.value = title.title;
+          option.text = title.title;   
           titleSelect.add(option);
         });
       })
