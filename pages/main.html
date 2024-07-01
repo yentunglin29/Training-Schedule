@@ -27,7 +27,7 @@
         </div>
         <div class="card-body">
           <p>
-            <a href="planner.html" class="btn btn-primary">前往 Planner</a>
+            <a href="/pages/planner.html" class="btn btn-primary">前往 Planner</a>
           </p>
           <p>
             根據使用者所選擇的時間生成日程表格，並且可以從右方區塊拖拉課程進去表格內。
@@ -140,7 +140,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
     // JavaScript to dynamically load menu bar
-    fetch('menu.html')
+    fetch('/pages/menu.html')
       .then(response => response.text())
       .then(data => {
         document.getElementById('menu-bar').innerHTML = data;
