@@ -122,6 +122,24 @@ app.post('/update-presenters', async (req, res) => {
   }
 });
 
+// Endpoint to delete a course
+app.post('/delete-course', async (req, res) => {
+  try {
+    const courses = await readJSONFile('database/courses.json');
+    const courseIndex = req.body.index;
+
+    if (courseIndex >= 0 && courseIndex < courses.length) {
+      courses.splice(courseIndex, 1);
+      await writeJSONFile('database/courses.json', courses);
+      res.send('Course deleted successfully');
+    } else {
+      res.status(400).send('Invalid course index');
+    }
+  } catch (err) {
+    res.status(500).send('Error deleting course');
+  }
+});
+
 // Endpoint to save JSON files to 'schedule' directory
 app.post('/save-json', (req, res) => {
   const { filename, content } = req.body;

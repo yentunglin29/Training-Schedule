@@ -138,12 +138,12 @@
           .then(response => response.json())
           .then(data => {
             data.splice(courseIndex, 1); // 移除课程
-            return fetch('http://localhost:3000/update-courses', { // 更新 courses.json 的端點
+            return fetch('/delete-course', { // 更新 courses.json 的端點
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(data),
+              body: JSON.stringify({ index: courseIndex }),
             })
             .then(response => {
               if (!response.ok) {
