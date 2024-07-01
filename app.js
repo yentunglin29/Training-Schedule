@@ -74,26 +74,14 @@ app.get('/presenters', async (req, res) => {
 });
 
 // Endpoint to add a new course title to 'titles.json'
-// app.post('/add-title', async (req, res) => {
-//   try {
-//     const titles = await readJSONFile('database/titles.json');
-//     titles.push({ title: req.body.title, years_of_experience: req.body.years_of_experience });
-//     await writeJSONFile('database/titles.json', titles);
-//     res.send(req.body.title);
-//   } catch (err) {
-//     res.status(500).send('Error saving title');
-//   }
-// });
-
-// Endpoint to add a new presenter to 'presenters.json'
-app.post('/add-presenter', async (req, res) => {
+app.post('/add-title', async (req, res) => {
   try {
-    const presenters = await readJSONFile('database/presenters.json');
-    presenters.push(req.body.name);
-    await writeJSONFile('database/presenters.json', presenters);
-    res.send(req.body.name);
+    const titles = await readJSONFile('database/titles.json');
+    titles.push({ title: req.body.title, years_of_experience: req.body.years_of_experience });
+    await writeJSONFile('database/titles.json', titles);
+    res.send(req.body.title);
   } catch (err) {
-    res.status(500).send('保存 presenter 时出错');
+    res.status(500).send('Error saving title');
   }
 });
 
