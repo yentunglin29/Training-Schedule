@@ -127,6 +127,23 @@ app.post('/update-presenters', async (req, res) => {
   }
 });
 
+app.post('/delete-presenter', async (req, res) => {
+  try {
+    const presenters = await readJSONFile('database/presenters.json');
+    const presenterIndex = req.body.index;
+
+    if (presenterIndex >= 0 && presenterIndex < presenters.length) {
+      presenters.splice(presenterIndex, 1);
+      await writeJSONFile('database/presenters.json', presenters);
+      res.send('Presenter deleted successfully');
+    } else {
+      res.status(400).send('Invalid presenter index');
+    }
+  } catch (err) {
+    res.status(500).send('Error deleting presenter');
+  }
+});
+
 // Endpoint to delete a course
 app.post('/delete-course', async (req, res) => {
   try {
