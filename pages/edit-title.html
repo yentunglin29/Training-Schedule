@@ -43,7 +43,12 @@
         const newYearsOfExperience = document.getElementById('yearsOfExperience').value;
 
         fetch('/titles')
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
           .then(titles => {
             if (index >= 0 && index < titles.length) {
               titles[index].title = newName;
@@ -63,33 +68,16 @@
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-            return fetch('/courses');
+            return response.json();
           })
-          .then(response => response.json())
-          .then(courses => {
-            courses.forEach(course => {
-              if (course.title === oldName) {
-                course.title = newName;
-              }
-            });
-
-            return fetch('/update-courses', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(courses),
-            });
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-
-            alert('Title and associated courses updated successfully!');
+          .then(() => {
+            alert('Title updated successfully!');
             window.location.href = '/pages/all-titles.html';
           })
-          .catch(error => console.error('Error:', error));
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update title. Please try again.');
+          });
       });
     });
 
