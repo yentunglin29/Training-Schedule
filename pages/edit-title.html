@@ -7,80 +7,70 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <div id="menu-bar"></div>
+  <div id="menu-bar"></div> 
 
   <div class="container mt-4">
     <h1>Edit Title</h1>
     <form id="editTitleForm">
       <div class="form-group">
-        <label for="title">Title:</label>
-        <input type="text" class="form-control" id="title" name="title" required>
+        <label for="titleName">Title Name:</label>
+        <input type="text" class="form-control" id="titleName" name="titleName" required>
       </div>
       <div class="form-group">
         <label for="yearsOfExperience">Years of Experience:</label>
         <input type="number" class="form-control" id="yearsOfExperience" name="yearsOfExperience" min="0" required>
       </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
+      <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
   </div>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
-      const index = parseInt(urlParams.get('index'), 10);
-      const oldName = urlParams.get('name');
-      const oldYearsOfExperience = urlParams.get('years_of_experience');
-
-      document.getElementById('title').value = oldName;
-      document.getElementById('yearsOfExperience').value = oldYearsOfExperience;
+      const id = urlParams.get('id');
+      const name = urlParams.get('name');
+      const yearsOfExperience = urlParams.get('years_of_experience');
+      
+      document.getElementById('titleName').value = name;
+      document.getElementById('yearsOfExperience').value = yearsOfExperience;
 
       document.getElementById('editTitleForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
-        const newName = document.getElementById('title').value;
-        const newYearsOfExperience = document.getElementById('yearsOfExperience').value;
+        const titleName = document.getElementById('titleName').value;
+        const yearsOfExperience = document.getElementById('yearsOfExperience').value;
 
-        fetch('/titles')
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(titles => {
-            if (index >= 0 && index < titles.length) {
-              titles[index].title = newName;
-              titles[index].years_of_experience = newYearsOfExperience;
-              return fetch('/update-titles', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(titles),
-              });
-            } else {
-              throw new Error('Invalid index');
-            }
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(() => {
-            alert('Title updated successfully!');
-            window.location.href = '/pages/all-titles.html';
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to update title. Please try again.');
-          });
+        fetch('/update-title', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify([{ _id: id, title: titleName, years_of_experience: Number(yearsOfExperience) }]),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          alert('Title updated successfully');
+          window.location.href = 'all-titles.html';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to update title. Please try again.');
+        });
+      });
+
+      document.getElementById('backButton').addEventListener('click', function() {
+        window.history.back();
       });
     });
-
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // JavaScript to dynamically load menu bar
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {
