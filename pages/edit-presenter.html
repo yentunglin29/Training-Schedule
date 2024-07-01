@@ -7,7 +7,7 @@
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <div id="menu-bar"></div>
+  <div id="menu-bar"></div> 
 
   <div class="container mt-4">
     <h1>Edit Presenter</h1>
@@ -17,6 +17,7 @@
         <input type="text" class="form-control" id="presenterName" name="presenterName" required>
       </div>
       <button type="submit" class="btn btn-primary">Save Changes</button>
+      <button type="button" class="btn btn-secondary" id="backButton">Go Back</button>
     </form>
   </div>
 
@@ -24,63 +25,49 @@
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const index = urlParams.get('index');
-      const oldName = urlParams.get('name');
-
-      document.getElementById('presenterName').value = oldName;
+      const name = urlParams.get('name');
+      
+      document.getElementById('presenterName').value = name;
 
       document.getElementById('editPresenterForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
-        const newName = document.getElementById('presenterName').value;
+        const presenterName = document.getElementById('presenterName').value;
 
-        // Update presenters.json
-        fetch('../database/presenters.json')
+        fetch('/presenters')
           .then(response => response.json())
-          .then(presenters => {
-            presenters[index] = newName; // Update presenter name
-            return fetch('http://localhost:3000/update-presenters', { // Endpoint to update presenters.json
+          .then(data => {
+            data[index] = presenterName;
+            return fetch('/update-presenters', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(presenters),
+              body: JSON.stringify(data),
             });
           })
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
-
-            // Update courses.json
-            return fetch('../database/courses.json')
+            alert('Presenter updated successfully');
+            window.location.href = 'all-presenters.html';
           })
-          .then(response => response.json())
-          .then(courses => {
-            courses.forEach(course => {
-              course.presenter = course.presenter.map(p => p === oldName ? newName : p); // Update presenter names
-            });
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update presenter. Please try again.');
+          });
+      });
 
-            return fetch('http://localhost:3000/update-courses', { // Endpoint to update courses.json
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(courses),
-            });
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-
-            // Alert and redirect
-            alert('Presenter name and associated courses updated successfully!');
-            window.location.href = '/pages/all-presenters.html';
-          })
-          .catch(error => console.error('Error:', error));
+      document.getElementById('backButton').addEventListener('click', function() {
+        window.history.back();
       });
     });
-
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
     // JavaScript to dynamically load menu bar
     fetch('menu.html')
       .then(response => response.text())
