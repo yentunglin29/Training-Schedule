@@ -23,7 +23,7 @@
       <a href="/pages/add-course.html" class="btn btn-primary">Add New Course</a>
     </div>
 
-    <!-- 添加過濾器 -->
+    <!-- Add filter -->
     <div class="mb-3">
       <label for="titleFilter" class="form-label">Filter by Title:</label>
       <select id="titleFilter" class="form-control">
@@ -40,25 +40,25 @@
   </div>
 
   <script>
-    let courses = []; // 保存所有課程數據
-    let originalIndexes = []; // 保存課程的原始索引
-    let selectedTitle = ''; // 保存当前的筛选条件
+    let courses = []; // Save all course data
+    let originalIndexes = []; // Save original indexes of courses
+    let selectedTitle = ''; // Save current filter condition
 
-    // 從 JSON 中加載課程
-    fetch('../database/courses.json')
+    // Load courses from MongoDB
+    fetch('/courses')
       .then(response => response.json())
       .then(data => {
-        courses = data; // 保存到全局變量
-        originalIndexes = data.map((_, index) => index); // 初始化原始索引
-        populateTitleFilter(); // 初始化標題過濾器
-        displayCourses(courses); // 顯示所有課程
+        courses = data; // Save to global variable
+        originalIndexes = data.map((_, index) => index); // Initialize original indexes
+        populateTitleFilter(); // Initialize title filter
+        displayCourses(courses); // Display all courses
       })
       .catch(error => console.error('Error:', error));
 
-    // 填充標題過濾器
+    // Populate title filter
     function populateTitleFilter() {
       const titleFilter = document.getElementById('titleFilter');
-      titleFilter.innerHTML = '<option value="">All Titles</option>'; // 清空已有内容
+      titleFilter.innerHTML = '<option value="">All Titles</option>'; // Clear existing content
       const titles = [...new Set(courses.map(course => course.title))];
       titles.forEach(title => {
         const option = document.createElement('option');
@@ -68,11 +68,11 @@
       });
     }
 
-    // 顯示課程列表
+    // Display course list
     function displayCourses(courseArray) {
       const courseList = document.getElementById('courseList');
-      courseList.innerHTML = ''; // 清空現有內容
-      courseArray.forEach((course, index) => {
+      courseList.innerHTML = ''; // Clear existing content
+      courseArray.forEach((course) => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item';
         listItem.innerHTML = `
@@ -85,8 +85,8 @@
               <strong>Presenter:</strong> ${Array.isArray(course.presenter) ? course.presenter.join(', ') : 'N/A'}
             </div>
             <div>
-              <button class="btn btn-sm btn-warning" onclick="editCourse(${originalIndexes[index]})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCourse(${index})">Delete</button>
+              <button class="btn btn-sm btn-warning" onclick="editCourse('${course._id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCourse('${course._id}')">Delete</button>
             </div>
           </div>
         `;
@@ -94,75 +94,59 @@
       });
     }
 
-    // 過濾課程
+    // Filter courses
     document.getElementById('titleFilter').addEventListener('change', function() {
       selectedTitle = this.value;
       const filteredCourses = selectedTitle
         ? courses.filter(course => course.title === selectedTitle)
-        : courses; // 顯示所有課程或過濾後的課程
+        : courses; // Show all or filtered courses
 
-      originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
+      originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // Update original indexes
       displayCourses(filteredCourses);
     });
 
-    // 清除過濾器
+    // Clear filters
     document.getElementById('clearButton').addEventListener('click', function() {
       document.getElementById('titleFilter').value = '';
       selectedTitle = '';
       displayCourses(courses);
-      originalIndexes = courses.map((_, index) => index); // 重置原始索引
+      originalIndexes = courses.map((_, index) => index); // Reset original indexes
     });
 
-    // 返回上一頁
+    // Go back to previous page
     document.getElementById('backButton').addEventListener('click', function() {
       window.history.back();
     });
 
-    // 跳轉到編輯頁面
-    function editCourse(index) {
+    // Navigate to edit page
+    function editCourse(id) {
       const url = new URL('/pages/edit-course.html', window.location.origin);
-      url.searchParams.append('index', index);
+      url.searchParams.append('id', id);
       window.location.href = url;
     }
 
-    // 刪除課程
-    function deleteCourse(index) {
-      const filteredCourses = selectedTitle
-        ? courses.filter(course => course.title === selectedTitle)
-        : courses;
-      const courseIndex = filteredCourses[index] ? courses.indexOf(filteredCourses[index]) : -1;
-
-      if (courseIndex > -1) {
-        // 从 courses.json 中删除
-        fetch('../database/courses.json')
-          .then(response => response.json())
-          .then(data => {
-            data.splice(courseIndex, 1); // 移除课程
-            return fetch('/delete-course', { // 更新 courses.json 的端點
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ index: courseIndex }),
-            })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-              return data; // 返回更新后的数据
-            });
-          })
-          .then(updatedData => {
-            courses = updatedData; // 更新全局變量
-            // 更新当前过滤后的列表
-            const newFilteredCourses = selectedTitle
-              ? courses.filter(course => course.title === selectedTitle)
-              : courses;
-            originalIndexes = newFilteredCourses.map(course => courses.indexOf(course)); // 更新原始索引
-            displayCourses(newFilteredCourses);
-          })
-          .catch(error => console.error('Error:', error));
-      }
+    // Delete course
+    function deleteCourse(id) {
+      fetch('/delete-course', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ _id: id }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        // Remove course from the DOM
+        courses = courses.filter(course => course._id !== id);
+        const filteredCourses = selectedTitle
+          ? courses.filter(course => course.title === selectedTitle)
+          : courses;
+        originalIndexes = filteredCourses.map(course => courses.indexOf(course)); // Update original indexes
+        displayCourses(filteredCourses);
+      })
+      .catch(error => console.error('Error:', error));
     }
   </script>
 
@@ -170,7 +154,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
-    // 動態加載選單
+    // Dynamically load menu
     fetch('menu.html')
       .then(response => response.text())
       .then(data => {

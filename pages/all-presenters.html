@@ -22,14 +22,14 @@
       .then(response => response.json())
       .then(data => {
         const presenterList = document.getElementById('presenterList');
-        data.forEach((presenter, index) => {
+        data.forEach((presenter) => {
           const listItem = document.createElement('li');
           listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
           listItem.innerHTML = `
-            ${presenter}
+            ${presenter.name}
             <div>
-              <button class="btn btn-sm btn-warning" onclick="editPresenter(${index}, '${presenter}')">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deletePresenter(${index})">Delete</button>
+              <button class="btn btn-sm btn-warning" onclick="editPresenter('${presenter._id}', '${presenter.name}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deletePresenter('${presenter._id}')">Delete</button>
             </div>
           `;
           presenterList.appendChild(listItem);
@@ -37,35 +37,29 @@
       })
       .catch(error => console.error('Error:', error));
       
-      // Function to redirect to edit page
-      function editPresenter(index, name) {
+      function editPresenter(id, name) {
         const url = new URL('/pages/edit-presenter.html', window.location.origin);
-        url.searchParams.append('index', index);
+        url.searchParams.append('id', id);
         url.searchParams.append('name', name);
         window.location.href = url;
       }
 
-      function deletePresenter(index) {
-        fetch('/presenters')
-          .then(response => response.json())
-          .then(data => {
-            data.splice(index, 1); // Remove the presenter from the array
-            return fetch('/delete-presenter', { // Endpoint to delete presenter
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ index }),
-            });
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            // Reload the page or update the UI to reflect changes
-            window.location.reload();
-          })
-          .catch(error => console.error('Error:', error));
+      function deletePresenter(id) {
+        fetch('/delete-presenter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ _id: id }),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          // Reload the page or update the UI to reflect changes
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
       }
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

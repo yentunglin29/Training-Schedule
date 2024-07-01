@@ -56,52 +56,45 @@
       const titleList = document.getElementById('titleList');
       titleList.innerHTML = '';
       const filteredData = filter === 'all' ? data : data.filter(title => title.years_of_experience == filter);
-      filteredData.forEach((title, index) => {
+      filteredData.forEach((title) => {
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-        listItem.setAttribute('data-index', index);
         listItem.innerHTML = `
           ${title.title} - ${title.years_of_experience} years
           <div>
-            <button class="btn btn-sm btn-warning" onclick="editTitle(${index}, '${title.title}', '${title.years_of_experience}')">Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteTitle(${index}, this)">Delete</button>
+            <button class="btn btn-sm btn-warning" onclick="editTitle('${title._id}', '${title.title}', '${title.years_of_experience}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTitle('${title._id}', this)">Delete</button>
           </div>
         `;
         titleList.appendChild(listItem);
       });
     }
 
-    function editTitle(index, name, years_of_experience) {
+    function editTitle(id, name, years_of_experience) {
       const url = new URL('/pages/edit-title.html', window.location.origin);
-      url.searchParams.append('index', index);
+      url.searchParams.append('id', id);
       url.searchParams.append('name', name);
       url.searchParams.append('years_of_experience', years_of_experience);
       window.location.href = url;
     }
 
-    function deleteTitle(index, button) {
-      const selectedFilter = localStorage.getItem('selectedFilter') || 'all';
-      fetch('/titles')
-        .then(response => response.json())
-        .then(data => {
-          data.splice(index, 1);
-          return fetch('/update-titles', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            // Remove the title from the DOM
-            const listItem = button.closest('li');
-            listItem.remove();
-          });
-        })
-        .catch(error => console.error('Error:', error));
+    function deleteTitle(id, button) {
+      fetch('/delete-title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ _id: id }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        // Remove the title from the DOM
+        const listItem = button.closest('li');
+        listItem.remove();
+      })
+      .catch(error => console.error('Error:', error));
     }
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
