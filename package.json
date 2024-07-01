@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
@@ -22,6 +23,6 @@
   },
   "description": "",
   "engines": {
-  "node": "18.16"
+    "node": "18.16"
   }
 }
