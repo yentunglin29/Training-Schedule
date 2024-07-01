@@ -7,6 +7,10 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
+// Enable CORS for all routes
+app.use(cors());
+
 // Set up Multer to store files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
