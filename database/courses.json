@@ -1,12 +1,72 @@
 [
   {
-    "title": "BC",
-    "topic": "Opening",
-    "content": "Welcome",
-    "duration": 30,
+    "title": "CRM",
+    "topic": "Lunch",
+    "content": "",
+    "duration": 60,
+    "presenter": []
+  },
+  {
+    "title": "CRM",
+    "topic": "Product Knowledge Reminding",
+    "content": "複習",
+    "duration": 50,
     "presenter": [
-      "Sandy",
-      "Nash"
+      "Sandy"
     ]
+  },
+  {
+    "title": "Administration",
+    "topic": "Presentation Skill",
+    "content": "",
+    "duration": 110,
+    "presenter": [
+      "Online"
+    ]
+  },
+  {
+    "title": "Administration",
+    "topic": "ConvaTec Sales",
+    "content": "PSR JD\n新人3個月Check point",
+    "duration": 60,
+    "presenter": [
+      "Sandy"
+    ]
+  },
+  {
+    "title": "Ostomy",
+    "topic": "Product Knowledge Reminding",
+    "content": "考試/複習",
+    "presenter": [
+      "Sandy"
+    ],
+    "duration": "60"
+  },
+  {
+    "title": "Ostomy",
+    "topic": "造口& Skin care 配件產品",
+    "content": "\"Accessories\n產品特性\n文獻討論\n市場銷售\nFAB and Q&A\"",
+    "presenter": [
+      "Sandy"
+    ],
+    "duration": "120"
+  },
+  {
+    "title": "Wound Care",
+    "topic": "Basics of Wound Healing and Wound Assessment",
+    "content": "傷口照護評估原則：TIME",
+    "presenter": [
+      "Sandy"
+    ],
+    "duration": "90"
+  },
+  {
+    "title": "Wound Care",
+    "topic": "Wound Hygiene",
+    "content": "Cleanse\nDebride\nRefashion\nDress\n(work shop)",
+    "presenter": [
+      "Sandy"
+    ],
+    "duration": "80"
   }
 ]
