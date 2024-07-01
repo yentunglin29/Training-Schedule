@@ -40,12 +40,12 @@
         const newName = document.getElementById('title').value;
         const newYearsOfExperience = document.getElementById('yearsOfExperience').value;
 
-        fetch('../database/titles.json')
+        fetch('/titles')
           .then(response => response.json())
           .then(titles => {
             titles[index].title = newName; // Update title
             titles[index].years_of_experience = newYearsOfExperience; // Update years of experience
-            return fetch('http://localhost:3000/update-titles', {
+            return fetch('/update-titles', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +58,7 @@
               throw new Error('Network response was not ok');
             }
 
-            return fetch('../database/courses.json');
+            return fetch('/courses');
           })
           .then(response => response.json())
           .then(courses => {
@@ -68,7 +68,7 @@
               }
             });
 
-            return fetch('http://localhost:3000/update-courses', {
+            return fetch('/update-courses', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

@@ -44,7 +44,7 @@
     });
 
     function fetchTitles(filter) {
-      fetch('../database/titles.json')
+      fetch('/titles')
         .then(response => response.json())
         .then(data => {
           updateTitleList(data, filter);
@@ -81,11 +81,11 @@
 
     function deleteTitle(index, button) {
       const selectedFilter = localStorage.getItem('selectedFilter') || 'all';
-      fetch('../database/titles.json')
+      fetch('/titles')
         .then(response => response.json())
         .then(data => {
           data.splice(index, 1);
-          return fetch('http://localhost:3000/update-titles', {
+          return fetch('/update-titles', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
