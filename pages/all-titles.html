@@ -31,6 +31,12 @@
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const selectedFilter = localStorage.getItem('selectedFilter') || 'all';
+      document.getElementById('experienceFilter').value = selectedFilter;
+      fetchTitles(selectedFilter);
+    });
+
     document.getElementById('experienceFilter').addEventListener('change', function() {
       const selectedFilter = this.value;
       localStorage.setItem('selectedFilter', selectedFilter);
