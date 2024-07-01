@@ -1,7 +1,6 @@
 {
   "name": "training-schedule",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "scripts": {
     "cypress:open": "cypress open",
@@ -20,5 +19,6 @@
   },
   "devDependencies": {
     "cypress": "^13.12.0"
-  }
+  },
+  "description": ""
 }
