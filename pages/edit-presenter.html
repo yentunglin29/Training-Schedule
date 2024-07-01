@@ -24,7 +24,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
-      const index = urlParams.get('index');
+      const id = urlParams.get('id');
       const name = urlParams.get('name');
       
       document.getElementById('presenterName').value = name;
@@ -34,29 +34,24 @@
 
         const presenterName = document.getElementById('presenterName').value;
 
-        fetch('/presenters')
-          .then(response => response.json())
-          .then(data => {
-            data[index] = presenterName;
-            return fetch('/update-presenters', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data),
-            });
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            alert('Presenter updated successfully');
-            window.location.href = 'all-presenters.html';
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to update presenter. Please try again.');
-          });
+        fetch('/update-presenter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify([{ _id: id, name: presenterName }]),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          alert('Presenter updated successfully');
+          window.location.href = 'all-presenters.html';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to update presenter. Please try again.');
+        });
       });
 
       document.getElementById('backButton').addEventListener('click', function() {
