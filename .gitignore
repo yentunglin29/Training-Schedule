@@ -6,6 +6,7 @@ database/
 
 package-lock.json
 cypress.config.js
+.env
 
 connection.txt
 to-do.txt
