@@ -25,21 +25,21 @@
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
-      const name = urlParams.get('name');
+      const oldName = urlParams.get('name');
       
-      document.getElementById('presenterName').value = name;
+      document.getElementById('presenterName').value = oldName;
 
       document.getElementById('editPresenterForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
-        const presenterName = document.getElementById('presenterName').value;
+        const newName = document.getElementById('presenterName').value;
 
         fetch('/update-presenter', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify([{ _id: id, name: presenterName }]),
+          body: JSON.stringify([{ _id: id, name: newName, oldName: oldName }]),
         })
         .then(response => {
           if (!response.ok) {

@@ -182,8 +182,22 @@ app.post('/update-presenter', async (req, res) => {
         upsert: true
       }
     }));
+
     await db.collection('presenters').bulkWrite(bulkOps);
-    res.send('Presenters updated successfully');
+
+    // Update the presenter's name in all related courses
+    const presenterNames = req.body.map(presenter => presenter.name);
+    for (let i = 0; i < presenterNames.length; i++) {
+      const oldName = req.body[i].oldName;
+      const newName = presenterNames[i];
+      await db.collection('courses').updateMany(
+        { presenter: oldName },
+        { $set: { "presenter.$[elem]": newName } },
+        { arrayFilters: [{ "elem": oldName }] }
+      );
+    }
+
+    res.send('Presenters and related courses updated successfully');
   } catch (err) {
     console.error('Failed to update presenters:', err);
     res.status(500).send('Failed to update presenters');
