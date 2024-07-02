@@ -10,6 +10,11 @@ const PORT = process.env.PORT || 3000;
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 
+if (!connectionString) {
+  console.error('MONGODB_URI environment variable not set.');
+  process.exit(1);
+}
+
 let db;
 client.connect()
   .then(() => {
