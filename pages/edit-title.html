@@ -29,34 +29,58 @@
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
-      const name = urlParams.get('name');
+      const oldTitle = urlParams.get('name');
       const yearsOfExperience = urlParams.get('years_of_experience');
       
-      document.getElementById('titleName').value = name;
+      document.getElementById('titleName').value = oldTitle;
       document.getElementById('yearsOfExperience').value = yearsOfExperience;
 
       document.getElementById('editTitleForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
-        const titleName = document.getElementById('titleName').value;
+        const newTitle = document.getElementById('titleName').value;
         const yearsOfExperience = document.getElementById('yearsOfExperience').value;
 
+        // Update the title and related courses
         fetch('/update-title', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify([{ _id: id, title: titleName, years_of_experience: Number(yearsOfExperience) }]),
+          body: JSON.stringify([{ _id: id, title: newTitle, years_of_experience: Number(yearsOfExperience) }]),
         })
         .then(response => {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          alert('Title updated successfully');
-          window.location.href = 'all-titles.html';
+          return response.json();
+        })
+        .then(() => {
+          // Update courses with the new title
+          fetch('/update-course-title', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ oldTitle, newTitle })
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(() => {
+            alert('Title and related courses updated successfully');
+            window.location.href = 'all-titles.html';
+          })
+          .catch(error => {
+            console.error('Error updating courses:', error);
+            alert('Failed to update courses. Please try again.');
+          });
         })
         .catch(error => {
-          console.error('Error:', error);
+          console.error('Error updating title:', error);
           alert('Failed to update title. Please try again.');
         });
       });

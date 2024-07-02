@@ -137,10 +137,38 @@ app.post('/update-title', async (req, res) => {
       };
     });
     await db.collection('titles').bulkWrite(bulkOps);
-    res.send('Titles updated successfully');
+    res.json({ message: 'Titles updated successfully' });
   } catch (err) {
     console.error('Failed to update titles:', err);
-    res.status(500).send('Failed to update titles');
+    res.status(500).json({ error: 'Failed to update titles' });
+  }
+});
+
+// Endpoint to update course title and related courses
+app.put('/update-course-title', async (req, res) => {
+  const { oldTitle, newTitle } = req.body;
+
+  if (!oldTitle || !newTitle) {
+    return res.status(400).json({ error: 'Old title and new title are required.' });
+  }
+
+  try {
+    // Update the course title in the titles collection
+    await db.collection('titles').updateOne(
+      { title: oldTitle },
+      { $set: { title: newTitle } }
+    );
+
+    // Update the courseTitle in all related courses
+    await db.collection('courses').updateMany(
+      { title: oldTitle },
+      { $set: { title: newTitle } }
+    );
+
+    res.json({ message: 'Course title and related courses updated successfully.' });
+  } catch (err) {
+    console.error('Failed to update course title and related courses:', err);
+    res.status(500).json({ error: 'Failed to update course title and related courses.' });
   }
 });
 
