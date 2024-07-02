@@ -7,36 +7,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// const uri = process.env.MONGODB_URI;
-const connectionString = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
 
 if (!connectionString) {
   console.error('MONGODB_URI environment variable not set.');
   process.exit(1);
 }
-
-const client = new MongoClient(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  ssl: true,
-  sslValidate: true,
-  tlsAllowInvalidCertificates: false,
-  tlsAllowInvalidHostnames: false,
-});
-
-async function run() {
-  try {
-      await client.connect();
-      console.log('Connected to MongoDB');
-      // your code here
-  } catch (err) {
-      console.error('Failed to connect to MongoDB:', err);
-  } finally {
-      await client.close();
-  }
-}
-
-run().catch(console.dir);
 
 let db;
 client.connect()
