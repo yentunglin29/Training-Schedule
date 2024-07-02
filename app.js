@@ -217,13 +217,28 @@ app.post('/delete-presenter', async (req, res) => {
 
 app.post('/delete-title', async (req, res) => {
   try {
-    await db.collection('titles').deleteOne({ _id: ObjectId.createFromHexString(req.body._id) });
-    res.send('Title deleted successfully');
+    const titleId = ObjectId.createFromHexString(req.body._id);
+    const titleDocument = await db.collection('titles').findOne({ _id: titleId });
+
+    if (!titleDocument) {
+      return res.status(404).send('Title not found');
+    }
+
+    const titleName = titleDocument.title;
+
+    // Delete the title
+    await db.collection('titles').deleteOne({ _id: titleId });
+
+    // Delete all related courses
+    await db.collection('courses').deleteMany({ title: titleName });
+
+    res.send('Title and related courses deleted successfully');
   } catch (err) {
-    console.error('Error deleting title:', err);
-    res.status(500).send('Error deleting title');
+    console.error('Error deleting title and related courses:', err);
+    res.status(500).send('Error deleting title and related courses');
   }
 });
+
 
 // Endpoint to delete a course
 app.post('/delete-course', async (req, res) => {
