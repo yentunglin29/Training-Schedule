@@ -2,15 +2,34 @@
   "version": 2,
   "builds": [
     {
-      "src": "pages/**/*.html",
+      "src": "app.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "pages/**",
       "use": "@vercel/static"
     },
     {
-      "src": "GIF/**/*",
+      "src": "GIF/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
-    { "src": "/", "dest": "/pages/main.html" }
+    {
+      "src": "/",
+      "dest": "/pages/main.html"
+    },
+    {
+      "src": "/titles",
+      "dest": "/titles"
+    },
+    {
+      "src": "/courses",
+      "dest": "/courses"
+    },
+    {
+      "src": "/presenters",
+      "dest": "/presenters"
+    }
   ]
 }
