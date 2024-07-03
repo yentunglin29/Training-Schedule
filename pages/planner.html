@@ -266,7 +266,7 @@
       });
 
       // Load Titles
-      fetch('../database/titles.json')
+      fetch('/titles')
         .then(response => response.json())
         .then(titles => {
           const titleSelect = document.getElementById('titleSelect');
@@ -288,7 +288,7 @@
 
         if (selectedTitle) {
           courseDetailsContainer.classList.add('active');
-          fetch('../database/courses.json')
+          fetch('/courses')
             .then(response => response.json())
             .then(courses => {
               const relatedCourses = courses.filter(course => course.title === selectedTitle);
