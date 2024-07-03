@@ -13,7 +13,7 @@ const client = new MongoClient(uri);
 let db;
 client.connect()
   .then(() => {
-    db = client.db('test'); // Use the 'test' database
+    db = client.db('official'); // Use the 'test' database
     console.log('Connected to MongoDB');
   })
   .catch(err => {
@@ -238,7 +238,6 @@ app.post('/delete-title', async (req, res) => {
     res.status(500).send('Error deleting title and related courses');
   }
 });
-
 
 // Endpoint to delete a course
 app.post('/delete-course', async (req, res) => {
