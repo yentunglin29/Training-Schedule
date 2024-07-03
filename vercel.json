@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "app.js",
+      "src": "api/app.js",
       "use": "@vercel/node"
     },
     {
@@ -20,16 +20,16 @@
       "dest": "/pages/main.html"
     },
     {
-      "src": "/titles",
-      "dest": "/titles"
+      "src": "/api/titles",
+      "dest": "/api/app.js"
     },
     {
-      "src": "/courses",
-      "dest": "/courses"
+      "src": "/api/courses",
+      "dest": "/api/app.js"
     },
     {
-      "src": "/presenters",
-      "dest": "/presenters"
+      "src": "/api/presenters",
+      "dest": "/api/app.js"
     }
   ]
 }
