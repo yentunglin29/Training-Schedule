@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
+const redis = require('redis');
 require('dotenv').config();
 
 const app = express();
@@ -9,8 +10,10 @@ const PORT = process.env.PORT || 5000;
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
+const redisClient = redis.createClient({ url: process.env.REDIS_URL });
 
 let db;
+
 client.connect()
   .then(() => {
     db = client.db('official'); // Use the 'test' database
@@ -21,8 +24,10 @@ client.connect()
     process.exit(1);
   });
 
-  app.use(cors());
-  app.use(express.json());
+redisClient.connect().catch(console.error);
+
+app.use(cors());
+app.use(express.json());
 
 // Middleware to check DB connection
 app.use((req, res, next) => {
@@ -33,6 +38,32 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware to check cache
+const checkCache = async (req, res, next) => {
+  const { originalUrl } = req;
+  try {
+    const cachedResponse = await redisClient.get(originalUrl);
+    if (cachedResponse) {
+      return res.json(JSON.parse(cachedResponse));
+    }
+    next();
+  } catch (err) {
+    console.error('Redis error:', err);
+    next();
+  }
+};
+
+// Middleware to set cache
+const setCache = (key, value) => {
+  try {
+    redisClient.set(key, JSON.stringify(value), {
+      EX: 60 * 5 // Cache for 5 minutes
+    });
+  } catch (err) {
+    console.error('Redis error:', err);
+  }
+};
+
 app.use('/pages', express.static(path.join(__dirname, '..', 'pages')));
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -40,39 +71,60 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'pages', 'main.html'));
 });
 
-// Endpoint to fetch titles
+const withExtendedTimeout = (promise, timeout = 5000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Operation timed out')), timeout)
+    )
+  ]);
+};
+
+// Apply middleware
+app.use(checkCache);
+
+// Endpoint to fetch titles with caching
 app.get('/api/titles', async (req, res) => {
   try {
-    if (!db) {
-      throw new Error('Database connection not established');
-    }
-    const titles = await db.collection('titles').find().toArray();
+    const titles = await withExtendedTimeout(
+      db.collection('titles').find().toArray(),
+      5000
+    );
     res.json(titles);
+    setCache(req.originalUrl, titles); // Cache the response
   } catch (err) {
     console.error('Error reading titles:', err);
-    res.status(500).send('Error reading titles');
+    res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
   }
 });
 
-// Endpoint to fetch courses
+// Endpoint to fetch courses with caching
 app.get('/api/courses', async (req, res) => {
   try {
-    const courses = await db.collection('courses').find().toArray();
+    const courses = await withExtendedTimeout(
+      db.collection('courses').find().toArray(),
+      5000
+    );
     res.json(courses);
+    setCache(req.originalUrl, courses); // Cache the response
   } catch (err) {
     console.error('Error reading courses:', err);
-    res.status(500).send('Error reading courses');
+    res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
   }
 });
 
-// Endpoint to fetch presenters
+// Endpoint to fetch presenters with caching
 app.get('/api/presenters', async (req, res) => {
   try {
-    const presenters = await db.collection('presenters').find().toArray();
+    const presenters = await withExtendedTimeout(
+      db.collection('presenters').find().toArray(),
+      5000
+    );
     res.json(presenters);
+    setCache(req.originalUrl, presenters); // Cache the response
   } catch (err) {
     console.error('Error reading presenters:', err);
-    res.status(500).send('Error reading presenters');
+    res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
   }
 });
 
@@ -133,7 +185,6 @@ app.post('/update-course', async (req, res) => {
     res.status(500).send('Failed to update courses');
   }
 });
-
 
 // Endpoint to update titles
 app.post('/update-title', async (req, res) => {
@@ -261,10 +312,6 @@ app.post('/delete-course', async (req, res) => {
     res.status(500).send('Error deleting course');
   }
 });
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on http://localhost:${PORT}/pages/main.html`);
-// });
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
