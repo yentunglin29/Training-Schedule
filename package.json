@@ -29,6 +29,6 @@
   },
   "description": "",
   "engines": {
-    "node": "18.16"
+    "node": "18.19"
   }
 }
