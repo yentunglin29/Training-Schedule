@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
-const redis = require('redis');
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +9,6 @@ const PORT = process.env.PORT || 5000;
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
-const redisClient = redis.createClient({ url: process.env.REDIS_URL });
 
 let db;
 
@@ -24,8 +22,6 @@ client.connect()
     process.exit(1);
   });
 
-redisClient.connect().catch(console.error);
-
 app.use(cors());
 app.use(express.json());
 
@@ -37,32 +33,6 @@ app.use((req, res, next) => {
   req.db = db;
   next();
 });
-
-// Middleware to check cache
-const checkCache = async (req, res, next) => {
-  const { originalUrl } = req;
-  try {
-    const cachedResponse = await redisClient.get(originalUrl);
-    if (cachedResponse) {
-      return res.json(JSON.parse(cachedResponse));
-    }
-    next();
-  } catch (err) {
-    console.error('Redis error:', err);
-    next();
-  }
-};
-
-// Middleware to set cache
-const setCache = (key, value) => {
-  try {
-    redisClient.set(key, JSON.stringify(value), {
-      EX: 60 * 5 // Cache for 5 minutes
-    });
-  } catch (err) {
-    console.error('Redis error:', err);
-  }
-};
 
 app.use('/pages', express.static(path.join(__dirname, '..', 'pages')));
 app.use(express.static(path.join(__dirname, '..')));
@@ -80,10 +50,7 @@ const withExtendedTimeout = (promise, timeout = 5000) => {
   ]);
 };
 
-// Apply middleware
-app.use(checkCache);
-
-// Endpoint to fetch titles with caching
+// Endpoint to fetch titles
 app.get('/api/titles', async (req, res) => {
   try {
     const titles = await withExtendedTimeout(
@@ -91,14 +58,13 @@ app.get('/api/titles', async (req, res) => {
       5000
     );
     res.json(titles);
-    setCache(req.originalUrl, titles); // Cache the response
   } catch (err) {
     console.error('Error reading titles:', err);
     res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
   }
 });
 
-// Endpoint to fetch courses with caching
+// Endpoint to fetch courses
 app.get('/api/courses', async (req, res) => {
   try {
     const courses = await withExtendedTimeout(
@@ -106,14 +72,13 @@ app.get('/api/courses', async (req, res) => {
       5000
     );
     res.json(courses);
-    setCache(req.originalUrl, courses); // Cache the response
   } catch (err) {
     console.error('Error reading courses:', err);
     res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
   }
 });
 
-// Endpoint to fetch presenters with caching
+// Endpoint to fetch presenters
 app.get('/api/presenters', async (req, res) => {
   try {
     const presenters = await withExtendedTimeout(
@@ -121,7 +86,6 @@ app.get('/api/presenters', async (req, res) => {
       5000
     );
     res.json(presenters);
-    setCache(req.originalUrl, presenters); // Cache the response
   } catch (err) {
     console.error('Error reading presenters:', err);
     res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
