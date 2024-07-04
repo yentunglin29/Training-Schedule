@@ -80,7 +80,7 @@
 
     function deleteTitle(id, title, button) {
       if (confirm(`Are you sure you want to delete the title "${title}" and all related courses?`)) {
-        fetch('/api/delete-title', {
+        fetch('/delete-title', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

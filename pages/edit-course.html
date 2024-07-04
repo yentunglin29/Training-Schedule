@@ -118,7 +118,7 @@
           presenter: Array.from(document.querySelectorAll('#presenterList input:checked')).map(cb => cb.value)
         };
 
-        fetch('/api/update-course', {
+        fetch('/update-course', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
