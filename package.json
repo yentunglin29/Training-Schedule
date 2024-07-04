@@ -1,9 +1,9 @@
 {
   "name": "training-schedule",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "api/app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node api/app.js",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
