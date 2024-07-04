@@ -32,43 +32,43 @@
       "dest": "/api/app.js"
     },
     {
-      "src": "/add-presenter",
+      "src": "/api/add-presenter",
       "dest": "/api/app.js"
     },
     {
-      "src": "/add-title",
+      "src": "/api/add-title",
       "dest": "/api/app.js"
     },
     {
-      "src": "/add-course",
+      "src": "/api/add-course",
       "dest": "/api/app.js"
     },
     {
-      "src": "/update-course",
+      "src": "/api/update-course",
       "dest": "/api/app.js"
     },
     {
-      "src": "/update-title",
+      "src": "/api/update-title",
       "dest": "/api/app.js"
     },
     {
-      "src": "/update-course-title",
+      "src": "/api/update-course-title",
       "dest": "/api/app.js"
     },
     {
-      "src": "/update-presenter",
+      "src": "/api/update-presenter",
       "dest": "/api/app.js"
     },
     {
-      "src": "/delete-presenter",
+      "src": "/api/delete-presenter",
       "dest": "/api/app.js"
     },
     {
-      "src": "/delete-title",
+      "src": "/api/delete-title",
       "dest": "/api/app.js"
     },
     {
-      "src": "/delete-course",
+      "src": "/api/delete-course",
       "dest": "/api/app.js"
     }
   ]
