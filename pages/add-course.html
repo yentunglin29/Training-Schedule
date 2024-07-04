@@ -60,7 +60,7 @@
       .catch(error => console.error('Error loading menu:', error));
   
     // Fetch and populate presenters
-    fetch('/presenters')
+    fetch('/api/presenters')
       .then(response => response.json())
       .then(presenters => {
         const presenterList = document.getElementById('presenterList');
@@ -100,7 +100,7 @@
   
       const newCourse = { title, topic, content, duration, presenter };
   
-      fetch('/add-course', {
+      fetch('/api/add-course', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +137,7 @@
     });
   
     // Fetch and populate titles
-    fetch('/titles')
+    fetch('/api/titles')
       .then(response => response.json())
       .then(titles => {
         const titleSelect = document.getElementById('title');

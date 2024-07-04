@@ -30,6 +30,46 @@
     {
       "src": "/api/presenters",
       "dest": "/api/app.js"
+    },
+    {
+      "src": "/add-presenter",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/add-title",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/add-course",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/update-course",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/update-title",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/update-course-title",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/update-presenter",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/delete-presenter",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/delete-title",
+      "dest": "/api/app.js"
+    },
+    {
+      "src": "/delete-course",
+      "dest": "/api/app.js"
     }
   ]
 }

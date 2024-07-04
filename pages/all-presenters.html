@@ -23,7 +23,7 @@
   </div>
 
   <script>
-    fetch('/presenters')
+    fetch('/api/presenters')
       .then(response => response.json())
       .then(data => {
         const presenterList = document.getElementById('presenterList');
@@ -50,7 +50,7 @@
       }
 
       function deletePresenter(id) {
-        fetch('/delete-presenter', {
+        fetch('/api/delete-presenter', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

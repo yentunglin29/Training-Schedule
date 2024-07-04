@@ -42,7 +42,7 @@
         const yearsOfExperience = document.getElementById('yearsOfExperience').value;
 
         // Update the title and related courses
-        fetch('/update-title', {
+        fetch('/api/update-title', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -57,7 +57,7 @@
         })
         .then(() => {
           // Update courses with the new title
-          fetch('/update-course-title', {
+          fetch('/api/update-course-title', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',

@@ -45,9 +45,9 @@
 
     // Fetch data from both endpoints
     Promise.all([
-      fetch('/courses').then(response => response.json()),
-      fetch('/presenters').then(response => response.json()),
-      fetch('/titles').then(response => response.json())
+      fetch('/api/courses').then(response => response.json()),
+      fetch('/api/presenters').then(response => response.json()),
+      fetch('/api/titles').then(response => response.json())
     ])
     .then(([coursesData, presentersData, titlesData]) => {
       courses = coursesData;
@@ -130,7 +130,7 @@
     }
 
     function deleteCourse(id) {
-      fetch('/delete-course', {
+      fetch('/api/delete-course', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

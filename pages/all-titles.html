@@ -44,7 +44,7 @@
     });
 
     function fetchTitles(filter) {
-      fetch('/titles')
+      fetch('/api/titles')
         .then(response => response.json())
         .then(data => {
           updateTitleList(data, filter);
@@ -80,7 +80,7 @@
 
     function deleteTitle(id, title, button) {
       if (confirm(`Are you sure you want to delete the title "${title}" and all related courses?`)) {
-        fetch('/delete-title', {
+        fetch('/api/delete-title', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
