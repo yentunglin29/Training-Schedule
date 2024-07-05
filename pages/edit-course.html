@@ -90,15 +90,21 @@
             document.getElementById('content').value = course.content;
             document.getElementById('duration').value = course.duration;
 
-            // Set selected presenters
-            if (course.presenter && Array.isArray(course.presenter)) {
-              course.presenter.forEach(p => {
-                const checkbox = document.getElementById(`presenter-${p}`);
-                if (checkbox) {
-                  checkbox.checked = true;
-                }
+            // Fetch presenters to get their IDs
+            return fetch('/api/presenters')
+              .then(response => response.json())
+              .then(presenters => {
+                // Set selected presenters using IDs
+                course.presenter.forEach(presenterName => {
+                  const presenter = presenters.find(p => p.name === presenterName);
+                  if (presenter) {
+                    const checkbox = document.getElementById(`presenter-${presenter._id}`);
+                    if (checkbox) {
+                      checkbox.checked = true;
+                    }
+                  }
+                });
               });
-            }
           } else {
             console.error('Invalid course id:', id);
             alert('Invalid course id. Please try again.');

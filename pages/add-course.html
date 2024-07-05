@@ -91,15 +91,15 @@
     // Form submission handling
     document.getElementById('courseForm').addEventListener('submit', function(event) {
       event.preventDefault();
-  
+
       const title = document.getElementById('title').value;
       const topic = document.getElementById('topic').value;
       const content = document.getElementById('content').value;
       const duration = document.getElementById('duration').value;
       const presenter = Array.from(document.querySelectorAll('#presenterList input:checked')).map(input => input.value);
-  
+
       const newCourse = { title, topic, content, duration, presenter };
-  
+
       fetch('/add-course', {
         method: 'POST',
         headers: {
@@ -124,7 +124,7 @@
         alert('Failed to add course. Please try again.');
       });
     });
-  
+      
     // Clear button
     document.getElementById('clearButton').addEventListener('click', function() {
       document.getElementById('courseForm').reset();

@@ -143,11 +143,18 @@ app.post('/add-course', async (req, res) => {
 app.post('/update-course', async (req, res) => {
   try {
     const bulkOps = req.body.map(course => {
-      const { _id, ...updateFields } = course;
+      const { _id, presenter, ...updateFields } = course;
+      
+      // Fetch presenter IDs using their names
+      const presenterIds = presenter.map(name => {
+        const p = db.collection('presenters').findOne({ name });
+        return p._id;
+      });
+
       return {
         updateOne: {
           filter: { _id: ObjectId.createFromHexString(course._id) },
-          update: { $set: updateFields },
+          update: { $set: { ...updateFields, presenter: presenterIds } },
           upsert: true
         }
       };
