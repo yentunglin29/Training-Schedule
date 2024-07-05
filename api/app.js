@@ -78,6 +78,24 @@ app.get('/api/courses', async (req, res) => {
   }
 });
 
+// New endpoint to fetch a course by ID
+app.get('/api/courses/:id', async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const course = await withExtendedTimeout(
+      db.collection('courses').findOne({ _id: new ObjectId(courseId) }),
+      5000
+    );
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    res.json(course);
+  } catch (err) {
+    console.error('Error reading course:', err);
+    res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
+  }
+});
+
 // Endpoint to fetch presenters
 app.get('/api/presenters', async (req, res) => {
   try {
