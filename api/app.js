@@ -121,6 +121,16 @@ app.post('/add-title', async (req, res) => {
 app.post('/add-course', async (req, res) => {
   try {
     const newCourse = req.body;
+    const presenterIds = newCourse.presenter;
+    
+    // 使用 new 關鍵字來實例化 ObjectId
+    const presenters = await db.collection('presenters').find({ 
+      _id: { $in: presenterIds.map(id => new ObjectId(id)) } 
+    }).toArray();
+    
+    const presenterNames = presenters.map(p => p.name);
+    newCourse.presenter = presenterNames;
+    
     await db.collection('courses').insertOne(newCourse);
     res.send('Course added successfully');
   } catch (err) {
