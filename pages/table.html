@@ -49,6 +49,7 @@
     <div class="button-group">
       <button id="generateTableBtn" class="btn btn-primary">生成表格</button>
       <button id="downloadPdfBtn" class="btn btn-success download-btn">PDF 下載</button>
+      <button id="downloadExcelBtn" class="btn btn-info download-btn">Excel 下載</button>
     </div>
 
     <!-- 容納表格 -->
@@ -59,16 +60,6 @@
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-  <script>
-    // JavaScript to dynamically load menu bar
-    fetch('menu.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('menu-bar').innerHTML = data;
-      })
-      .catch(error => console.error('Error loading menu:', error));
-  </script>
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.zh-TW.min.js"></script>
@@ -76,6 +67,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vxe-table-plugin-export-pdf/fonts/source-han-sans-normal.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
   <script>
     $(document).ready(function() {
@@ -96,7 +88,6 @@
         { title: '住宿', values: [] },
         { title: '行銷+行政(含珊珊)', values: [] },
         { title: '受邀講師', values: [] },
-        // { title: '不在人員(請填上姓名及特殊備註)', values: [] }
       ];
 
       // 生成表格
@@ -265,6 +256,50 @@
         });
 
         pdf.save('訂餐與住宿統計表.pdf');
+      });
+
+      // Excel Download Function
+      $('#downloadExcelBtn').click(function() {
+        const tables = $('#tables-container .table-wrapper');
+        if (tables.length === 0) {
+          alert('No table available for download.');
+          return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        tables.each(function(index, tableElement) {
+          const table = $(tableElement).find('table');
+          const ws_data = [];
+
+          table.find('thead tr').each(function() {
+            const row = [];
+            $(this).find('th, td').each(function() {
+              row.push($(this).find('input').length ? $(this).find('input').val() : $(this).text());
+            });
+            ws_data.push(row);
+          });
+
+          table.find('tbody tr').each(function() {
+            const row = [];
+            $(this).find('th, td').each(function() {
+              if ($(this).find('select').length) {
+                const val = $(this).find('select').val();
+                row.push(val === "012345678910" ? "0" : val);
+              } else if ($(this).find('textarea').length) {
+                row.push($(this).find('textarea').val());
+              } else {
+                row.push($(this).text());
+              }
+            });
+            ws_data.push(row);
+          });
+
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          XLSX.utils.book_append_sheet(wb, ws, `Table ${index + 1}`);
+        });
+
+        XLSX.writeFile(wb, '訂餐與住宿統計表.xlsx');
       });
     });
   </script>
