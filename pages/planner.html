@@ -106,6 +106,7 @@
         <input type="text" id="datepicker" class="form-control" placeholder="Select date range">
         <button id="generateScheduleBtn" class="btn btn-primary mt-2">Generate Schedule</button>
         <button id="downloadPdfBtn" class="btn btn-success download-btn mt-2">Download PDF</button>
+        <button id="downloadExcelBtn" class="btn btn-info download-btn mt-2">Download Excel</button>
       </div>
       <!-- Title Selector -->
       <div class="form-group">
@@ -151,6 +152,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vxe-table-plugin-export-pdf/fonts/source-han-sans-normal.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -205,6 +207,61 @@
 
         pdf.save(`${filename}.pdf`);
       }
+
+      // Excel Download Function
+      function downloadExcel() {
+        const tables = document.querySelectorAll('#schedule-container .day');
+        if (tables.length === 0) {
+          alert('No schedule available for download.');
+          return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        tables.forEach((dayElement, index) => {
+          const ws_data = [];
+
+          const day = dayElement.querySelector('.day-info').innerText;
+          const tableTitle = dayElement.querySelector('.table-title-input').value;
+          const table = dayElement.querySelector('.json-content table');
+
+          if (table) {
+            const rows = Array.from(table.querySelectorAll('tr')).map(tr => {
+              return Array.from(tr.querySelectorAll('td, th')).map(td => td.innerText);
+            });
+
+            ws_data.push([day, tableTitle]);
+            ws_data.push([]);
+            rows.forEach(row => ws_data.push(row));
+          }
+
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+          // Auto-size columns
+          const colWidths = ws_data[0].map((col, i) => ({
+            wch: Math.max(
+              ...ws_data.map(row => (row[i] ? row[i].toString().length : 10)),
+              10 // Minimum width
+            )
+          }));
+
+          ws['!cols'] = colWidths;
+
+          // Auto-size rows
+          const rowHeights = ws_data.map(row => ({
+            hpt: Math.max(...row.map(cell => (cell ? cell.toString().split('\n').length * 15 : 15)))
+          }));
+
+          ws['!rows'] = rowHeights;
+
+          XLSX.utils.book_append_sheet(wb, ws, `Schedule ${index + 1}`);
+        });
+
+        XLSX.writeFile(wb, 'schedule.xlsx');
+      }
+
+      // Bind click event to download Excel button
+      document.getElementById('downloadExcelBtn').addEventListener('click', downloadExcel);
 
       // Date Picker Settings
       $('#datepicker').datepicker({
@@ -422,7 +479,7 @@
         });
       }
 
-      // Bind click event to download button
+      // Bind click event to download PDF button
       document.getElementById('downloadPdfBtn').addEventListener('click', downloadPdf);
     });
 
