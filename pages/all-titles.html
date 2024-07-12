@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display All Course Titles</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .color-circle {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  </style>
 </head>
 <body>
   <div id="menu-bar"></div>
@@ -65,7 +74,10 @@
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
         listItem.innerHTML = `
-          ${title.title} - ${title.years_of_experience} years
+          <span>
+            <span class="color-circle" style="background-color: ${title.color};"></span>
+            ${title.title} - ${title.years_of_experience} years
+          </span>
           <div>
             <button class="btn btn-sm btn-warning" onclick="editTitle('${title._id}', '${title.title}', '${title.years_of_experience}')">Edit</button>
             <button class="btn btn-sm btn-danger" onclick="deleteTitle('${title._id}', '${title.title}', this)">Delete</button>
@@ -74,6 +86,7 @@
         titleList.appendChild(listItem);
       });
     }
+
     function editTitle(id, name, years_of_experience) {
       const url = new URL('/pages/edit-title.html', window.location.origin);
       url.searchParams.append('id', id);
