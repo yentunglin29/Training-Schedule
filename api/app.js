@@ -14,7 +14,7 @@ let db;
 
 client.connect()
   .then(() => {
-    db = client.db('official'); // Use the 'test' database
+    db = client.db('official'); // Use the 'official' database
     console.log('Connected to MongoDB');
   })
   .catch(err => {
@@ -121,12 +121,28 @@ app.post('/add-presenter', async (req, res) => {
   }
 });
 
+// Endpoint to fetch a title by ID
+app.get('/get-title', async (req, res) => {
+  try {
+    const titleId = req.query.id;
+    const title = await db.collection('titles').findOne({ _id: new ObjectId(titleId) });
+    if (!title) {
+      return res.status(404).json({ error: 'Title not found' });
+    }
+    res.json(title);
+  } catch (err) {
+    console.error('Error fetching title:', err);
+    res.status(500).json({ error: 'Failed to fetch title' });
+  }
+});
+
 // Endpoint to add a new course title
 app.post('/add-title', async (req, res) => {
   try {
     await db.collection('titles').insertOne({
       title: req.body.title,
-      years_of_experience: Number(req.body.years_of_experience)
+      years_of_experience: Number(req.body.years_of_experience),
+      color: req.body.color
     });
     res.send(req.body.title);
   } catch (err) {
