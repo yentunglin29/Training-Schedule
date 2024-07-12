@@ -208,7 +208,7 @@ app.post('/update-title', async (req, res) => {
       const { _id, ...updateFields } = title;
       return {
         updateOne: {
-          filter: { _id: ObjectId.createFromHexString(title._id) },
+          filter: { _id: ObjectId.createFromHexString(_id) },
           update: { $set: updateFields },
           upsert: true
         }
