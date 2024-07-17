@@ -102,12 +102,16 @@
     <h1>Planner</h1>
 
     <!-- Selection Section -->
-    <!-- Selection Section -->
     <div class="selection-section">
       <!-- Date Picker -->
       <div class="form-group">
         <label for="datepicker">Select Date:</label>
         <input type="text" id="datepicker" class="form-control" placeholder="Select date range">
+        <div class="button-group text-right mt-2">
+          <button id="generateScheduleBtn" class="btn btn-primary">生成表格</button>
+          <button id="downloadPdfBtn" class="btn btn-success">PDF 下載</button>
+          <button id="downloadExcelBtn" class="btn btn-info">Excel 下載</button>
+        </div>
       </div>
       <!-- Title Selector -->
       <div class="form-group">
@@ -116,11 +120,6 @@
           <option value="">Select Title</option>
         </select>
       </div>
-    </div>
-    <div class="button-group text-right mt-2">
-      <button id="generateScheduleBtn" class="btn btn-primary">生成表格</button>
-      <button id="downloadPdfBtn" class="btn btn-success">PDF 下載</button>
-      <button id="downloadExcelBtn" class="btn btn-info">Excel 下載</button>
     </div>
 
     <div class="content">
