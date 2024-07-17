@@ -123,7 +123,6 @@
         <div id="schedule-container">
           <!-- Schedule will be populated by JavaScript -->
         </div>
-        <!-- <button id="downloadPdfBtn" class="btn btn-success download-btn">Download PDF</button> -->
       </div>
 
       <!-- Course Details Sidebar -->
@@ -157,6 +156,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const { jsPDF } = window.jspdf;
+      const tableColors = {};
 
       // PDF Download Function
       async function downloadPdf() {
@@ -192,10 +192,12 @@
 
         newContent.forEach((content, index) => {
           if (index > 0) pdf.addPage();
+          const color = tableColors[content.day] || '#ffffff'; // Default color if not set
           pdf.autoTable({
             head: [content.header],
             body: content.rows,
             startY: 60,
+            headStyles: { fillColor: color }, // Set header color
             didDrawPage: function () {
               pdf.setFont('SourceHanSans-Normal', 'normal');
               pdf.setFontSize(12);
@@ -324,11 +326,13 @@
       });
 
       // Load Titles
+      let titlesData = {};
       fetch('/api/titles')
         .then(response => response.json())
         .then(titles => {
           const titleSelect = document.getElementById('titleSelect');
           titles.forEach(titleObj => {
+            titlesData[titleObj.title] = titleObj.color;
             const option = document.createElement('option');
             option.value = titleObj.title;
             option.text = titleObj.title;
@@ -355,7 +359,14 @@
                   const courseElement = document.createElement('div');
                   courseElement.classList.add('course-detail', 'draggable');
                   courseElement.draggable = true;
-                  courseElement.dataset.course = JSON.stringify(course);
+                  courseElement.dataset.course = JSON.stringify({
+                    title: course.title,
+                    topic: course.topic,
+                    content: course.content,
+                    duration: course.duration,
+                    presenter: course.presenter,
+                    color: titlesData[course.title] // Add this line
+                  });
                   courseElement.innerHTML = `
                     <h5>${course.title}</h5>
                     <p><strong>Topic:</strong> ${course.topic}</p>
@@ -428,6 +439,11 @@
             <td>${course.presenter.join(', ')}</td>
           `;
           dropzone.dataset.course = courseData; // Store course data
+
+          // Save the color in the tableColors object
+          const tableId = dropzone.closest('.day').querySelector('.day-info').innerText;
+          const courseTitle = course.title;
+          tableColors[tableId] = titlesData[courseTitle] || '#ffffff'; // Default color if not found
 
           const newDropzone = document.createElement('tr');
           newDropzone.classList.add('dropzone');
