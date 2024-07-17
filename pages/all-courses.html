@@ -72,10 +72,14 @@
     function populateTitleFilter() {
       const titleFilter = document.getElementById('titleFilter');
       titleFilter.innerHTML = '<option value="">All Titles</option>';
+      const titleCount = titles.reduce((count, title) => {
+        count[title] = (count[title] || 0) + courses.filter(course => course.title === title).length;
+        return count;
+      }, {});
       titles.forEach(title => {
         const option = document.createElement('option');
         option.value = title;
-        option.textContent = title;
+        option.textContent = `${title} (${titleCount[title]})`;
         titleFilter.appendChild(option);
       });
     }
