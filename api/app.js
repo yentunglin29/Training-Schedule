@@ -176,24 +176,24 @@ app.post('/add-course', async (req, res) => {
 // Endpoint to update courses
 app.post('/update-course', async (req, res) => {
   try {
-    const bulkOps = req.body.map(course => {
+    const bulkOps = await Promise.all(req.body.map(async (course) => {
       const { _id, presenter, ...updateFields } = course;
-      
+
       // Fetch presenter IDs using their names
-      const presenterIds = presenter.map(name => {
-        const p = db.collection('presenters').findOne({ name });
-        return p._id;
-      });
+      const presenterDocs = await db.collection('presenters').find({ name: { $in: presenter } }).toArray();
+      const presenterIds = presenterDocs.map(p => p._id);
 
       return {
         updateOne: {
-          filter: { _id: ObjectId.createFromHexString(course._id) },
+          filter: { _id: new ObjectId(_id) },
           update: { $set: { ...updateFields, presenter: presenterIds } },
           upsert: true
         }
       };
-    });
+    }));
+
     await db.collection('courses').bulkWrite(bulkOps);
+
     res.send('Courses updated successfully');
   } catch (err) {
     console.error('Failed to update courses:', err);

@@ -115,37 +115,37 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => console.error('Error:', error));
 
-  document.getElementById('editCourseForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+    document.getElementById('editCourseForm').addEventListener('submit', function(event) {
+  event.preventDefault();
 
-    const updatedCourse = {
+  const updatedCourse = {
       _id: id,
       title: document.getElementById('title').value,
       topic: document.getElementById('topic').value,
       content: document.getElementById('content').value,
       duration: parseInt(document.getElementById('duration').value),
       presenter: Array.from(document.querySelectorAll('#presenterList input:checked')).map(cb => cb.value)
-    };
+  };
 
-    fetch('/update-course', {
+  fetch('/update-course', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
       },
       body: JSON.stringify([updatedCourse]),
-    })
-    .then(response => {
+  })
+  .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+          throw new Error('Network response was not ok');
       }
       alert('Course updated successfully!');
       window.location.href = 'all-courses.html';
-    })
-    .catch(error => {
+  })
+  .catch(error => {
       console.error('Error:', error);
       alert('Failed to update course. Please try again.');
-    });
   });
+});
 
   document.getElementById('backButton').addEventListener('click', function() {
     window.history.back();
